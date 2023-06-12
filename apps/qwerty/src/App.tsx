@@ -1,10 +1,16 @@
 import { Card, Drawer, Menu, MenuItem } from '@learner/daisy-solid';
+import { toRx } from '@learner/solid-rx';
+import { createSignal } from 'solid-js';
 import Header from './Header';
 import InputStats from './InputStat';
 import Word from './Word';
 
 function App() {
   let wordInputRef: HTMLInputElement | undefined;
+
+  const [input, setInput] = createSignal('');
+
+  toRx(input).subscribe(console.log);
 
   return (
     <Drawer
@@ -35,6 +41,7 @@ function App() {
             ref={wordInputRef}
             class="fixed h-0 w-0 opacity-0"
             aria-label="word input"
+            onInput={(e) => setInput(e.currentTarget.value)}
           />
           <Word></Word>
           <InputStats></InputStats>
