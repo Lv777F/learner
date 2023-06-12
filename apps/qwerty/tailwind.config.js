@@ -2,11 +2,12 @@ const {
   createGlobPatternsForDependencies,
 } = require('@nx/js/src/utils/generate-globs');
 const { join } = require('path');
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     join(__dirname, 'src/**/*.{html,ts,tsx,css}'),
-    ...createGlobPatternsForDependencies(__dirname),
+    ...createGlobPatternsForDependencies(__dirname, '*.{html,ts,tsx,css}'),
   ],
   theme: {
     extend: {},

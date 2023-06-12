@@ -1,18 +1,5 @@
 {
   "name": "qwerty",
-  "version": "0.0.1",
-  "description": "Nx Solid qwerty app",
-  "devDependencies": {
-    "autoprefixer": "^10.4.14",
-    "daisyui": "^3.0.3",
-    "eslint-plugin-solid": "0.12.1",
-    "postcss": "^8.4.24",
-    "tailwindcss": "^3.3.2",
-    "vite-plugin-solid": "2.7.0",
-    "solid-testing-library": "^0.5.1",
-    "solid-jest": "^0.2.0"
-  },
-  "dependencies": {
-    "solid-js": "^1.7.6"
-  }
+  "version": "0.1.0",
+  "description": "Nx Solid qwerty app"
 }

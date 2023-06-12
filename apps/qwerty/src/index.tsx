@@ -1,4 +1,4 @@
-import { render } from '../node_modules/solid-js/web';
+import { render } from 'solid-js/web';
 
 import App from './App';
 
