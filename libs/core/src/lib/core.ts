@@ -33,16 +33,6 @@ export function stepByStep<T>(
     );
 }
 
-// export function realLast<T>(notifier?:(source:T)=>void){
-//   return (source$:Observable<T>)=>source$.pipe(
-//     connect(sharedSource$=>
-//       sharedSource$.pipe(
-//         finalize(()=>{notifier?.()})
-//       )
-//     )
-//   )
-// }
-
 export function stepControl<T>(
   controller$: Observable<number>,
   stepper: Stepper<T>
@@ -50,7 +40,7 @@ export function stepControl<T>(
   const finishSubj = new Subject<void>();
   return (items$: Observable<T[]>) =>
     items$.pipe(
-      switchMap((items) =>
+      map((items) =>
         controller$.pipe(
           startWith(0),
           switchMap((i) =>
@@ -67,7 +57,6 @@ export function stepControl<T>(
               })
             )
           ),
-          // inner handle
           takeUntil(finishSubj)
         )
       )

@@ -3,6 +3,7 @@ import { Card, Drawer, Menu, MenuItem } from '@learner/daisy-solid';
 import {
   Subject,
   bufferCount,
+  delayWhen,
   filter,
   map,
   merge,
@@ -19,6 +20,7 @@ import {
   Word as WordType,
   getPaginatedItems,
   remoteDictionaries$,
+  syncLocalDictionary,
 } from './dicts';
 
 function App() {
@@ -40,6 +42,7 @@ function App() {
   );
 
   const words$ = rxFrom(observable(dict)).pipe(
+    delayWhen(syncLocalDictionary),
     switchMap((dictName) => getPaginatedItems<WordType>(dictName, 0, 2))
   );
 
@@ -60,14 +63,10 @@ function App() {
             skip$
           )
         )
-      )
+      ),
+      switchMap((word) => word)
     )
   );
-
-  timer(2000).subscribe(() => {
-    skip$.next();
-    skip$.next();
-  });
 
   return (
     <Drawer
