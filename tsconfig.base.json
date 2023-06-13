@@ -16,8 +16,7 @@
     "baseUrl": ".",
     "paths": {
       "@learner/core": ["libs/core/src/index.ts"],
-      "@learner/daisy-solid": ["libs/daisy-solid/src/index.ts"],
-      "@learner/solid-rx": ["libs/solid-rx/src/index.ts"]
+      "@learner/daisy-solid": ["libs/daisy-solid/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

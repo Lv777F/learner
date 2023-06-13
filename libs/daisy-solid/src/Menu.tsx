@@ -3,6 +3,7 @@ import {
   Signal,
   createContext,
   createEffect,
+  createSelector,
   createSignal,
   useContext,
 } from 'solid-js';
@@ -34,12 +35,13 @@ export function MenuItem<T>(
   }>
 ) {
   const [value, setValue] = useContext(MenuContext);
+  const isActive = createSelector(value);
 
   return (
     <li>
       <a
         classList={{
-          active: value() === props.value,
+          active: isActive(props.value),
         }}
         onClick={[setValue, props.value]}
       >

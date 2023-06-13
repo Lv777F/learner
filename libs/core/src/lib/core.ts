@@ -17,34 +17,59 @@ import {
   takeUntil,
 } from 'rxjs';
 
-export function stepByStep<T>(notifier: (item: T) => Observable<unknown>) {
-  const finish = new Subject<void>();
+type Stepper<T> = (
+  item$: Observable<T>,
+  finishSubj?: Subject<void>
+) => Observable<T>;
+
+export function stepByStep<T>(
+  notifier: (item: T) => Observable<unknown>
+): Stepper<T> {
+  return (item$: Observable<T>) =>
+    item$.pipe(
+      concatMap((item) =>
+        new BehaviorSubject(item).pipe(takeUntil(notifier(item)))
+      )
+    );
+}
+
+// export function realLast<T>(notifier?:(source:T)=>void){
+//   return (source$:Observable<T>)=>source$.pipe(
+//     connect(sharedSource$=>
+//       sharedSource$.pipe(
+//         finalize(()=>{notifier?.()})
+//       )
+//     )
+//   )
+// }
+
+export function stepControl<T>(
+  controller$: Observable<number>,
+  stepper: Stepper<T>
+) {
+  const finishSubj = new Subject<void>();
   return (items$: Observable<T[]>) =>
     items$.pipe(
-      map(
-        (items) =>
-          (controller$: Observable<number> = new Subject()) =>
-            controller$.pipe(
-              startWith(0),
-              switchMap((i) =>
-                from(items.slice(i)).pipe(
-                  concatMap((item) =>
-                    new BehaviorSubject(item).pipe(takeUntil(notifier(item)))
-                  ),
-                  connect((sharedItem$) => {
-                    const finishSub = sharedItem$.pipe(last()).subscribe(() => {
-                      finish.next();
-                    });
-                    return sharedItem$.pipe(
-                      finalize(() => {
-                        finishSub.unsubscribe();
-                      })
-                    );
+      switchMap((items) =>
+        controller$.pipe(
+          startWith(0),
+          switchMap((i) =>
+            stepper(from(items.slice(i))).pipe(
+              connect((sharedItem$) => {
+                const finishSub = sharedItem$.pipe(last()).subscribe(() => {
+                  finishSubj.next();
+                });
+                return sharedItem$.pipe(
+                  finalize(() => {
+                    finishSub.unsubscribe();
                   })
-                )
-              ),
-              takeUntil(finish)
+                );
+              })
             )
+          ),
+          // inner handle
+          takeUntil(finishSubj)
+        )
       )
     );
 }

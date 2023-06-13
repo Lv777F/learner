@@ -1,5 +1,4 @@
-import { Observable } from 'rxjs';
-import { ParentProps, VoidProps } from 'solid-js';
+import { ParentProps, VoidProps, mergeProps } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
 export function Stats(props: ParentProps<{ class?: string }>) {
@@ -11,25 +10,33 @@ export function Stats(props: ParentProps<{ class?: string }>) {
 }
 
 export function Stat(
-  props: VoidProps<{
-    value$?: Observable<number>;
+  _props: VoidProps<{
+    value?: number;
     title?: string;
-    type: 'time' | 'count';
+    type?: 'time' | 'count';
   }>
 ) {
+  const props = mergeProps({ value: 0, type: 'count' }, _props);
   return (
     <li class="stat place-items-center">
       <div class="stat-value font-mono">
         <Dynamic
           component={
             {
-              time: () => (
-                <span class="countdown">
-                  <span style={{ '--value': '0' }} />:
-                  <span style={{ '--value': '0' }} />
-                </span>
+              time: () => {
+                const min = () => Math.floor(props.value / 60);
+                const sec = () => props.value % 60;
+                return (
+                  <span class="countdown">
+                    <span style={{ '--value': min() }} />
+                    :
+                    <span style={{ '--value': sec() }} />
+                  </span>
+                );
+              },
+              count: () => (
+                <span class="counter" style={{ '--count': props.value }} />
               ),
-              count: () => <span class="counter" style={{ '--count': '0' }} />,
             }[props.type]
           }
         ></Dynamic>

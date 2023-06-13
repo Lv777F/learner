@@ -1,0 +1,18 @@
+# TODO Automatic generate in CI
+
+version: 1
+dictionaries:
+  - name: CET-4
+    description: 四级词汇
+    language: en
+    meaningLanguage: zh
+    path: /dictionaries/cet-4.yaml
+    lastUpdate: 2019-12-31T00:00:00+08:00
+    count: 2607
+  - name: CET-6
+    description: 六级词汇
+    language: en
+    meaningLanguage: zh
+    path: /dictionaries/cet-6.yaml
+    lastUpdate: 2019-12-31T00:00:00+08:00
+    count: 2345

@@ -1,31 +1,87 @@
+import { stepByStep, stepControl } from '@learner/core';
 import { Card, Drawer, Menu, MenuItem } from '@learner/daisy-solid';
-import { toRx } from '@learner/solid-rx';
-import { createSignal } from 'solid-js';
+import {
+  Subject,
+  bufferCount,
+  filter,
+  map,
+  merge,
+  from as rxFrom,
+  switchMap,
+  tap,
+  timer,
+} from 'rxjs';
+import { For, createSignal, from, observable } from 'solid-js';
 import Header from './Header';
 import InputStats from './InputStat';
 import Word from './Word';
+import {
+  Word as WordType,
+  getPaginatedItems,
+  remoteDictionaries$,
+} from './dicts';
 
 function App() {
   let wordInputRef: HTMLInputElement | undefined;
 
   const [input, setInput] = createSignal('');
+  const input$ = rxFrom(observable(input));
 
-  toRx(input).subscribe(console.log);
+  const resetInput = () => {
+    if (wordInputRef) {
+      wordInputRef.value = '';
+    }
+    setInput('');
+  };
+
+  const [dict, setDict] = createSignal('CET-4');
+  const dicts = from(
+    remoteDictionaries$.pipe(map(({ dictionaries }) => dictionaries))
+  );
+
+  const words$ = rxFrom(observable(dict)).pipe(
+    switchMap((dictName) => getPaginatedItems<WordType>(dictName, 0, 2))
+  );
+
+  const jump$ = new Subject<number>();
+  const skip$ = new Subject<void>();
+
+  const word = from(
+    words$.pipe(
+      stepControl(
+        jump$,
+        stepByStep(({ word }) =>
+          merge(
+            input$.pipe(
+              filter((input) => word === input),
+              tap(() => timer(200).subscribe(resetInput)),
+              bufferCount(3)
+            ),
+            skip$
+          )
+        )
+      )
+    )
+  );
+
+  timer(2000).subscribe(() => {
+    skip$.next();
+    skip$.next();
+  });
 
   return (
     <Drawer
       side={
-        <Menu initialValue="cet-4">
-          <MenuItem value="cet-4">
-            <Card title="CET-4">
-              <p>英语四级</p>
-            </Card>
-          </MenuItem>
-          <MenuItem value="cet-6">
-            <Card title="CET-6">
-              <p>英语六级</p>
-            </Card>
-          </MenuItem>
+        <Menu initialValue={dict()} onChange={setDict}>
+          <For each={dicts()}>
+            {({ name, description }) => (
+              <MenuItem value={name}>
+                <Card title={name}>
+                  <p>{description}</p>
+                </Card>
+              </MenuItem>
+            )}
+          </For>
         </Menu>
       }
     >
@@ -43,7 +99,7 @@ function App() {
             aria-label="word input"
             onInput={(e) => setInput(e.currentTarget.value)}
           />
-          <Word></Word>
+          <Word word={word} input={input}></Word>
           <InputStats></InputStats>
         </main>
         <footer class="footer footer-center"></footer>
