@@ -1,14 +1,18 @@
-import { Accessor, Index, VoidProps, createMemo } from 'solid-js';
-import { Word as WordType } from './dicts';
+import { delay, switchMap } from 'rxjs';
+import { Index, createMemo, from } from 'solid-js';
+import { input$$, word$$ } from '../service/words';
 
-function Word(
-  props: VoidProps<{
-    word: Accessor<WordType | undefined>;
-    input: Accessor<string>;
-  }>
-) {
-  const chars = createMemo(() => props.word()?.word.split(''));
-  const meaning = createMemo(() => props.word()?.meanings.join(', '));
+function Word() {
+  const word = from(
+    word$$.pipe(
+      switchMap((word) => word),
+      delay(200)
+    )
+  );
+
+  const input = from(input$$);
+
+  const chars = createMemo(() => word()?.word?.split(''));
 
   return (
     <h2
@@ -20,7 +24,7 @@ function Word(
           <span class="text-primary text-[5vw]">
             <Index each={chars()}>
               {(char, i) => {
-                const inputChar = createMemo(() => props.input()[i]);
+                const inputChar = createMemo(() => input()?.[i]);
                 const isCorrect = () => char() === inputChar();
                 return (
                   <span
@@ -39,11 +43,13 @@ function Word(
             </Index>
           </span>
           <rp>(</rp>
-          <rt class="text-accent text-[1vw]">{props.word()?.pronunciation}</rt>
+          <rt class="text-accent text-[1vw]">{word()?.pronunciation}</rt>
           <rp>)</rp>
         </ruby>
       </dfn>
-      <span class="text-secondary text-[2vw]">{meaning()}</span>
+      <span class="text-secondary text-[2vw]">
+        {word()?.meanings.join(', ')}
+      </span>
     </h2>
   );
 }

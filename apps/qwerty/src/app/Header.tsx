@@ -1,8 +1,13 @@
 import { useDrawerToggler } from '@learner/daisy-solid';
+import { from } from 'solid-js';
 import { themeChange } from 'theme-change';
+import { currentDict$$ } from '../service/dicts';
 function Header() {
   const toggleDrawer = useDrawerToggler();
   themeChange();
+
+  const currentDict = from(currentDict$$);
+
   return (
     <header class="navbar justify-between">
       <button
@@ -10,7 +15,7 @@ function Header() {
         onClick={[toggleDrawer, true]}
         type="button"
       >
-        CET-4
+        {currentDict()}
       </button>
       <select
         name="theme"
@@ -25,6 +30,8 @@ function Header() {
     </header>
   );
 }
+
+export default Header;
 
 const themes = [
   'light',
@@ -57,4 +64,3 @@ const themes = [
   'coffee',
   'winter',
 ];
-export default Header;

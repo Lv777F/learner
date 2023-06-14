@@ -1,9 +1,16 @@
-import { openDB } from "idb";
-import { catchError, map, of, shareReplay, switchMap, take } from "rxjs";
-import { fromFetch } from "rxjs/fetch";
-import YAML from "yaml";
+import { loadYaml } from '@learner/utils';
+import { openDB } from 'idb';
+import {
+  BehaviorSubject,
+  catchError,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  take,
+} from 'rxjs';
 
-const DICTIONARY_INDEX_PATH = "/dictionaries/index.yaml";
+const DICTIONARY_INDEX_PATH = '/dictionaries/index.yaml';
 
 export interface Dictionary {
   name: string;
@@ -21,14 +28,9 @@ export interface Word {
   pronunciation: string;
 }
 
-export function loadYaml<T>(path: string) {
-  return fromFetch(path).pipe(
-    switchMap((res) => res.text()),
-    map((text) => YAML.parse(text) as T)
-  );
-}
+export const currentDict$$ = new BehaviorSubject('CET-4');
 
-export const remoteDictionaries$ = loadYaml<{
+export const remoteDicts$ = loadYaml<{
   version: number;
   dictionaries: Dictionary[];
 }>(DICTIONARY_INDEX_PATH).pipe(
@@ -36,15 +38,15 @@ export const remoteDictionaries$ = loadYaml<{
   take(1)
 );
 
-export const dictionaryDB$ = remoteDictionaries$.pipe(
+export const dictDB$ = remoteDicts$.pipe(
   catchError(() => of({ version: undefined, dictionaries: [] })),
   switchMap(({ version, dictionaries }) =>
-    openDB("dictionary", version, {
+    openDB('dictionary', version, {
       upgrade(db) {
         if (version) {
           dictionaries.forEach((dict) => {
             if (!db.objectStoreNames.contains(dict.name)) {
-              db.createObjectStore(dict.name).createIndex("word", "word", {
+              db.createObjectStore(dict.name).createIndex('word', 'word', {
                 unique: true,
               });
             }
@@ -53,12 +55,11 @@ export const dictionaryDB$ = remoteDictionaries$.pipe(
       },
     })
   ),
-  shareReplay({ bufferSize: 1, refCount: false }),
-  take(1)
+  shareReplay({ bufferSize: 1, refCount: false })
 );
 
-export function loadRemoteDictionary(name: string) {
-  return remoteDictionaries$.pipe(
+export function loadRemoteDict(name: string) {
+  return remoteDicts$.pipe(
     map(({ dictionaries }) => dictionaries.find((dict) => dict.name === name)),
     switchMap((dict) => {
       if (dict) return loadYaml<Word[]>(dict.path);
@@ -67,12 +68,13 @@ export function loadRemoteDictionary(name: string) {
   );
 }
 
-export function syncLocalDictionary(name: string) {
-  return loadRemoteDictionary(name).pipe(
+export function syncLocalDict(name: string) {
+  return loadRemoteDict(name).pipe(
     switchMap((words) =>
-      dictionaryDB$.pipe(
+      dictDB$.pipe(
+        take(1),
         switchMap(async (db) => {
-          const tx = db.transaction(name, "readwrite");
+          const tx = db.transaction(name, 'readwrite');
           const store = tx.objectStore(name);
           await store.clear();
           words.forEach((word, i) => store.add(word, i));
@@ -88,11 +90,12 @@ export function getPaginatedItems<T>(
   page: number,
   pageSize = 20
 ) {
-  return dictionaryDB$.pipe(
+  return dictDB$.pipe(
+    take(1),
     switchMap(
       (db) =>
         db
-          .transaction(dictionaryName, "readonly")
+          .transaction(dictionaryName, 'readonly')
           .objectStore(dictionaryName)
           .getAll(
             IDBKeyRange.bound(

@@ -5,26 +5,17 @@ import {
   combineLatestWith,
   concatMap,
   connect,
-  filter,
   finalize,
   from,
   last,
   map,
-  pairwise,
   startWith,
   switchMap,
   switchScan,
   takeUntil,
 } from 'rxjs';
 
-type Stepper<T> = (
-  item$: Observable<T>,
-  finishSubj?: Subject<void>
-) => Observable<T>;
-
-export function stepByStep<T>(
-  notifier: (item: T) => Observable<unknown>
-): Stepper<T> {
+export function stepByStep<T>(notifier: (item: T) => Observable<unknown>) {
   return (item$: Observable<T>) =>
     item$.pipe(
       concatMap((item) =>
@@ -33,31 +24,28 @@ export function stepByStep<T>(
     );
 }
 
-export function stepControl<T>(
-  controller$: Observable<number>,
-  stepper: Stepper<T>
-) {
-  const finishSubj = new Subject<void>();
+export function replayFrom<T>(notifier$: Observable<number>) {
+  const finish$$ = new Subject<void>();
   return (items$: Observable<T[]>) =>
     items$.pipe(
       map((items) =>
-        controller$.pipe(
+        notifier$.pipe(
           startWith(0),
           switchMap((i) =>
-            stepper(from(items.slice(i))).pipe(
+            from(items.slice(i)).pipe(
               connect((sharedItem$) => {
-                const finishSub = sharedItem$.pipe(last()).subscribe(() => {
-                  finishSubj.next();
+                const finish_ = sharedItem$.pipe(last()).subscribe(() => {
+                  finish$$.next();
                 });
                 return sharedItem$.pipe(
                   finalize(() => {
-                    finishSub.unsubscribe();
+                    finish_.unsubscribe();
                   })
                 );
               })
             )
           ),
-          takeUntil(finishSubj)
+          takeUntil(finish$$)
         )
       )
     );
@@ -66,17 +54,6 @@ export function stepControl<T>(
 export interface InputStat {
   correct: number;
   incorrect: number;
-}
-
-// 过滤回退
-export function filterBackspace() {
-  return (source$: Observable<string>) =>
-    source$.pipe(
-      startWith(''),
-      pairwise(),
-      filter(([prev, curr]) => curr.length > prev.length),
-      map(([, curr]) => curr)
-    );
 }
 
 export function inputStat<T>(validFn: (item: T) => Observable<boolean>) {
@@ -113,12 +90,12 @@ export interface Stats {
   second: number;
 }
 
-export function stats(inputSecond$: Observable<number>) {
+export function stats(second$: Observable<number>) {
   return (source$: Observable<InputStat>) =>
     source$.pipe(
       connect((sharedSource$) =>
         sharedSource$.pipe(
-          combineLatestWith(inputSecond$),
+          combineLatestWith(second$),
           map(([{ correct, incorrect }, second]) => {
             const totalInputCount = correct + incorrect;
             return {
