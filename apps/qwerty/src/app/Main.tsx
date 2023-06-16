@@ -8,6 +8,9 @@ function Main() {
   let wordInputRef: HTMLInputElement | undefined;
 
   pass$.pipe(takeUntilCleanUp()).subscribe(() => {
+    if (wordInputRef) {
+      wordInputRef.value = '';
+    }
     input$$.next('');
   });
 
@@ -18,9 +21,9 @@ function Main() {
       onFocus={() => wordInputRef?.focus()}
     >
       <input
+        class="fixed h-0 w-0 opacity-0"
         type="text"
         ref={wordInputRef}
-        class="fixed h-0 w-0 opacity-0"
         aria-label="word input"
         onBlur={() => pause$$.next()}
         onFocus={() => start$$.next()}

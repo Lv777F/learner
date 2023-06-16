@@ -1,9 +1,10 @@
 import { Stat, Stats } from '@learner/daisy-solid';
+import { switchAll } from 'rxjs';
 import { from } from 'solid-js';
 import { stats$ } from '../service/stats';
 
 function InputStats() {
-  const stats = from(stats$);
+  const stats = from(stats$.pipe(switchAll()));
 
   return (
     <Stats class="w-full">

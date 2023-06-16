@@ -1,14 +1,9 @@
-import { delay, switchMap } from 'rxjs';
+import { switchAll } from 'rxjs';
 import { Index, createMemo, from } from 'solid-js';
 import { input$$, word$$ } from '../service/words';
 
 function Word() {
-  const word = from(
-    word$$.pipe(
-      switchMap((word) => word),
-      delay(200)
-    )
-  );
+  const word = from(word$$.pipe(switchAll()));
 
   const input = from(input$$);
 
@@ -24,16 +19,13 @@ function Word() {
           <span class="text-primary text-[5vw]">
             <Index each={chars()}>
               {(char, i) => {
-                const inputChar = createMemo(() => input()?.[i]);
+                const inputChar = () => input()?.[i];
                 const isCorrect = () => char() === inputChar();
                 return (
                   <span
                     class={
-                      inputChar()
-                        ? isCorrect()
-                          ? 'text-success'
-                          : 'text-error'
-                        : ''
+                      (inputChar() ?? '') &&
+                      (isCorrect() ? 'text-success' : 'text-error')
                     }
                   >
                     {char()}

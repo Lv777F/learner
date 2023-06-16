@@ -3,7 +3,6 @@ import { from } from 'solid-js';
 import { themeChange } from 'theme-change';
 import { currentDict$$ } from '../service/dicts';
 function Header() {
-  const toggleDrawer = useDrawerToggler();
   themeChange();
 
   const currentDict = from(currentDict$$);
@@ -12,7 +11,7 @@ function Header() {
     <header class="navbar justify-between">
       <button
         class="btn-ghost btn text-xl normal-case"
-        onClick={[toggleDrawer, true]}
+        onClick={[useDrawerToggler(), true]}
         type="button"
       >
         {currentDict()}

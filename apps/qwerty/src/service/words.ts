@@ -53,9 +53,11 @@ const word$$ = words$.pipe(
           ),
           skip$$
         )
-      )
+      ),
+      shareReplay({ refCount: true, bufferSize: 1 })
     )
-  )
+  ),
+  shareReplay({ refCount: true, bufferSize: 1 })
 );
 
 export { input$$, jump$$, pass$, skip$$, word$$, words$ };

@@ -7,14 +7,9 @@ import {
   mergeAll,
   scan,
   startWith,
-  switchAll,
   windowToggle,
 } from 'rxjs';
 import { input$$, word$$ } from './words';
-
-const pause$$ = new Subject<void>();
-
-const start$$ = new Subject<void>();
 
 const inputStat$$ = word$$.pipe(
   map((words$) =>
@@ -29,6 +24,10 @@ const inputStat$$ = word$$.pipe(
   )
 );
 
+const pause$$ = new Subject<void>();
+
+const start$$ = new Subject<void>();
+
 const second$ = interval(1000).pipe(
   windowToggle(start$$.pipe(startWith(null)), () => pause$$),
   mergeAll(),
@@ -36,8 +35,7 @@ const second$ = interval(1000).pipe(
 );
 
 const stats$ = inputStat$$.pipe(
-  map((inputStat$) => inputStat$.pipe(stats(second$))),
-  switchAll()
+  map((inputStat$) => inputStat$.pipe(stats(second$)))
 );
 
 export { inputStat$$, pause$$, start$$, stats$ };
