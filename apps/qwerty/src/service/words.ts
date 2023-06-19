@@ -2,14 +2,16 @@ import { replayFrom, stepByStep } from '@learner/core';
 import {
   BehaviorSubject,
   Subject,
-  bufferCount,
   delayWhen,
   filter,
   map,
   merge,
   of,
+  scan,
   shareReplay,
+  skipWhile,
   switchMap,
+  take,
   tap,
 } from 'rxjs';
 import {
@@ -21,22 +23,22 @@ import {
 } from './dicts';
 
 const input$$ = new BehaviorSubject('');
-
-const pass$$ = new Subject<void>();
-const pass$ = pass$$.asObservable();
 const jump$$ = new Subject<number>();
 const skip$$ = new Subject<void>();
 
 const words$ = currentDict$$.pipe(
   delayWhen((dictName) =>
     dictDB$.pipe(
+      take(1),
       switchMap((db) => db.count(dictName)),
       switchMap((count) => (count > 0 ? of(0) : syncLocalDict(dictName)))
     )
   ),
-  switchMap((dictName) => getPaginatedItems<Word>(dictName, 0, 10)),
-  shareReplay({ refCount: true, bufferSize: 1 })
+  switchMap((dictName) => getPaginatedItems<Word>(dictName, 0, 2)),
+  shareReplay({ bufferSize: 1, refCount: true })
 );
+
+const pass$$ = new Subject<void>();
 
 const word$$ = words$.pipe(
   replayFrom(jump$$),
@@ -48,16 +50,20 @@ const word$$ = words$.pipe(
             filter((input) => word === input),
             tap(() => {
               pass$$.next();
+              input$$.next('');
             }),
-            bufferCount(1)
+            scan((acc) => acc + 1, 0),
+            skipWhile((passCount) => passCount < 3)
           ),
           skip$$
         )
       ),
-      shareReplay({ refCount: true, bufferSize: 1 })
+      shareReplay({ bufferSize: 1, refCount: true })
     )
   ),
-  shareReplay({ refCount: true, bufferSize: 1 })
+  shareReplay({ bufferSize: 1, refCount: true })
 );
 
-export { input$$, jump$$, pass$, skip$$, word$$, words$ };
+export const pass$ = pass$$.asObservable();
+
+export { input$$, jump$$, skip$$, word$$, words$ };

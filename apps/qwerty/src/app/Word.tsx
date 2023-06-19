@@ -1,11 +1,16 @@
-import { switchAll } from 'rxjs';
+import { delay, delayWhen, switchAll, timer } from 'rxjs';
 import { Index, createMemo, from } from 'solid-js';
 import { input$$, word$$ } from '../service/words';
 
 function Word() {
-  const word = from(word$$.pipe(switchAll()));
+  const word = from(word$$.pipe(switchAll(), delay(200)));
 
-  const input = from(input$$);
+  const input = from(
+    input$$.pipe(
+      //! delay for reset, may cause bug.
+      delayWhen((v) => timer(v ? 0 : 200))
+    )
+  );
 
   const chars = createMemo(() => word()?.word?.split(''));
 

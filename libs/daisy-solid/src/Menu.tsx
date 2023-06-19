@@ -39,14 +39,14 @@ export function MenuItem<T>(
 
   return (
     <li>
-      <a
+      <div
         classList={{
           active: isActive(props.value),
         }}
         onClick={[setValue, props.value]}
       >
         {props.children}
-      </a>
+      </div>
     </li>
   );
 }

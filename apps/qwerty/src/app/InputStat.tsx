@@ -1,10 +1,23 @@
 import { Stat, Stats } from '@learner/daisy-solid';
-import { switchAll } from 'rxjs';
+import { map, startWith, switchAll } from 'rxjs';
 import { from } from 'solid-js';
 import { stats$ } from '../service/stats';
 
 function InputStats() {
-  const stats = from(stats$.pipe(switchAll()));
+  const stats = from(
+    stats$.pipe(
+      map(
+        startWith({
+          second: 0,
+          totalInputCount: 0,
+          wpm: 0,
+          correctInputCount: 0,
+          correctRate: 0,
+        })
+      ),
+      switchAll()
+    )
+  );
 
   return (
     <Stats class="w-full">

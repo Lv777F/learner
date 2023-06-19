@@ -1,17 +1,19 @@
-import { takeUntilCleanUp } from '@learner/utils';
+import { createEffect, from } from 'solid-js';
 import { pause$$, start$$ } from '../service/stats';
-import { input$$, pass$ } from '../service/words';
+import { input$$ } from '../service/words';
 import InputStats from './InputStat';
 import Word from './Word';
 
 function Main() {
   let wordInputRef: HTMLInputElement | undefined;
 
-  pass$.pipe(takeUntilCleanUp()).subscribe(() => {
-    if (wordInputRef) {
-      wordInputRef.value = '';
+  const input = from(input$$);
+
+  createEffect(() => {
+    const inputValue = input() ?? '';
+    if (wordInputRef && wordInputRef.value !== inputValue) {
+      wordInputRef.value = inputValue;
     }
-    input$$.next('');
   });
 
   return (

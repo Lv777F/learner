@@ -33,10 +33,7 @@ export const currentDict$$ = new BehaviorSubject('CET-4');
 export const remoteDicts$ = loadYaml<{
   version: number;
   dictionaries: Dictionary[];
-}>(DICTIONARY_INDEX_PATH).pipe(
-  shareReplay({ bufferSize: 1, refCount: false }),
-  take(1)
-);
+}>(DICTIONARY_INDEX_PATH).pipe(shareReplay({ bufferSize: 1, refCount: true }));
 
 export const dictDB$ = remoteDicts$.pipe(
   catchError(() => of({ version: undefined, dictionaries: [] })),
@@ -55,11 +52,12 @@ export const dictDB$ = remoteDicts$.pipe(
       },
     })
   ),
-  shareReplay({ bufferSize: 1, refCount: false })
+  shareReplay({ bufferSize: 1, refCount: true })
 );
 
 export function loadRemoteDict(name: string) {
   return remoteDicts$.pipe(
+    take(1),
     map(({ dictionaries }) => dictionaries.find((dict) => dict.name === name)),
     switchMap((dict) => {
       if (dict) return loadYaml<Word[]>(dict.path);
