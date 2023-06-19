@@ -1,15 +1,20 @@
-import { delay, delayWhen, switchAll, timer } from 'rxjs';
+import {
+  animationFrameScheduler,
+  delayWhen,
+  observeOn,
+  switchAll,
+  timer,
+} from 'rxjs';
 import { Index, createMemo, from } from 'solid-js';
 import { input$$, word$$ } from '../service/words';
 
 function Word() {
-  const word = from(word$$.pipe(switchAll(), delay(200)));
+  const word = from(
+    word$$.pipe(switchAll(), observeOn(animationFrameScheduler, 300))
+  );
 
   const input = from(
-    input$$.pipe(
-      //! delay for reset, may cause bug.
-      delayWhen((v) => timer(v ? 0 : 200))
-    )
+    input$$.pipe(delayWhen((v) => timer(v ? 0 : 200, animationFrameScheduler)))
   );
 
   const chars = createMemo(() => word()?.word?.split(''));
