@@ -1,7 +1,7 @@
 module.exports = {
   parser: '@typescript-eslint/parser',
   plugins: ['solid', '@typescript-eslint'],
-  extends: ['../../.eslintrc.json'],
+  extends: ['../../.eslintrc.json', 'plugin:rxjs/recommended'],
   ignorePatterns: ['!**/*', 'vite.config.ts'],
   overrides: [
     {

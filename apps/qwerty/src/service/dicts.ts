@@ -60,8 +60,8 @@ export function loadRemoteDict(name: string) {
     take(1),
     map(({ dictionaries }) => dictionaries.find((dict) => dict.name === name)),
     switchMap((dict) => {
-      if (dict) return loadYaml<Word[]>(dict.path);
-      throw new Error(`Remote dictionary ${name} not found`);
+      if (!dict) throw new Error(`Remote dictionary ${name} not found`);
+      return loadYaml<Word[]>(dict.path);
     })
   );
 }

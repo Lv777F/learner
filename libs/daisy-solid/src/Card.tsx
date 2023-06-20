@@ -1,8 +1,8 @@
-import { ParentProps } from 'solid-js';
+import { JSX, ParentProps } from 'solid-js';
 
 export function Card(
   props: ParentProps<{
-    title?: string;
+    title?: JSX.Element;
   }>
 ) {
   return (

@@ -9,6 +9,7 @@ import {
   shareReplay,
   startWith,
   switchAll,
+  tap,
   windowToggle,
 } from 'rxjs';
 import { input$$, word$$ } from './words';
@@ -19,7 +20,12 @@ const inputStat$$ = word$$.pipe(
       inputStat(({ word }) =>
         input$$.pipe(
           filterBackspace(),
-          map((input) => word.startsWith(input))
+          map((input) => word.startsWith(input)),
+          tap((correct) => {
+            if (!correct) {
+              input$$.next('');
+            }
+          })
         )
       ),
       shareReplay({ bufferSize: 1, refCount: true })

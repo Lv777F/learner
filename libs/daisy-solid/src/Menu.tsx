@@ -5,17 +5,21 @@ import {
   createEffect,
   createSelector,
   createSignal,
+  mergeProps,
   useContext,
 } from 'solid-js';
 
 export const MenuContext = createContext(createSignal());
 
 export function Menu<T>(
-  props: ParentProps<{
+  _props: ParentProps<{
     initialValue?: T;
     onChange?: (value?: T) => void;
+    class?: string;
   }>
 ) {
+  const props = mergeProps({ class: '' }, _props);
+
   const valueSignal = createSignal(props.initialValue);
 
   createEffect(() => {
@@ -24,7 +28,7 @@ export function Menu<T>(
 
   return (
     <MenuContext.Provider value={valueSignal as Signal<unknown>}>
-      <ul class="menu bg-base-100 h-full w-80 gap-y-4 p-4">{props.children}</ul>
+      <ul class={'menu '.concat(props.class)}>{props.children}</ul>
     </MenuContext.Provider>
   );
 }

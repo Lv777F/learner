@@ -1,17 +1,19 @@
-import { useDrawerToggler } from '@learner/daisy-solid';
+import { useDrawer } from '@learner/daisy-solid';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { themeOrder } from 'daisyui/src/theming/themeDefaults';
 import { from } from 'solid-js';
-import { themeChange } from 'theme-change';
 import { currentDict$$ } from '../service/dicts';
 function Header() {
-  themeChange();
-
   const currentDict = from(currentDict$$);
+
+  const [, toggleDrawer] = useDrawer();
 
   return (
     <header class="navbar justify-between">
       <button
         class="btn-ghost btn text-xl normal-case"
-        onClick={[useDrawerToggler(), true]}
+        onClick={[toggleDrawer, true]}
         type="button"
       >
         {currentDict()}
@@ -22,7 +24,7 @@ function Header() {
         data-choose-theme
         class="select w-full max-w-xs"
       >
-        {themes.map((theme) => (
+        {themeOrder.map((theme: string) => (
           <option value={theme}>{theme}</option>
         ))}
       </select>
@@ -31,35 +33,3 @@ function Header() {
 }
 
 export default Header;
-
-const themes = [
-  'light',
-  'dark',
-  'cupcake',
-  'bumblebee',
-  'emerald',
-  'corporate',
-  'synthwave',
-  'retro',
-  'cyberpunk',
-  'valentine',
-  'halloween',
-  'garden',
-  'forest',
-  'aqua',
-  'lofi',
-  'pastel',
-  'fantasy',
-  'wireframe',
-  'black',
-  'luxury',
-  'dracula',
-  'cmyk',
-  'autumn',
-  'business',
-  'acid',
-  'lemonade',
-  'night',
-  'coffee',
-  'winter',
-];

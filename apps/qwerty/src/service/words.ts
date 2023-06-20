@@ -31,10 +31,10 @@ const words$ = currentDict$$.pipe(
     dictDB$.pipe(
       take(1),
       switchMap((db) => db.count(dictName)),
-      switchMap((count) => (count > 0 ? of(0) : syncLocalDict(dictName)))
+      switchMap((count) => (count > 0 ? of(null) : syncLocalDict(dictName)))
     )
   ),
-  switchMap((dictName) => getPaginatedItems<Word>(dictName, 0, 2)),
+  switchMap((dictName) => getPaginatedItems<Word>(dictName, 0)),
   shareReplay({ bufferSize: 1, refCount: true })
 );
 
