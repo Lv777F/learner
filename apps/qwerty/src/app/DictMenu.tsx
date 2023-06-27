@@ -1,10 +1,11 @@
 import {
   Card,
-  Column,
   Menu,
   MenuItem,
-  Row,
   Table,
+  Tbody,
+  Td,
+  Tr,
   useDrawer,
 } from '@learner/daisy-solid';
 import { map } from 'rxjs';
@@ -48,12 +49,14 @@ function DictMenu() {
         {(dictValue) => {
           const [] = createSignal();
           return (
-            <Table
-              pinned
-              data={Array.from(Array(100), (_, i) => i + 1)}
-              rows={[<Row>A</Row>, <Row>B</Row>]}
-            >
-              <Column></Column>
+            <Table data={Array.from(Array(20), (_, i) => i + 1)}>
+              <Tbody>
+                {(row) => (
+                  <Tr selectable>
+                    <Td>{(cell) => cell}</Td>
+                  </Tr>
+                )}
+              </Tbody>
             </Table>
           );
         }}
