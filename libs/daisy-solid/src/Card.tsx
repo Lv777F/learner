@@ -1,10 +1,10 @@
 import { JSX, ParentProps } from 'solid-js';
 
-export function Card(
-  props: ParentProps<{
-    title?: JSX.Element;
-  }>
-) {
+export type CardProps = ParentProps<{
+  title?: JSX.Element;
+}>;
+
+export function Card(props: CardProps) {
   return (
     <div class="card">
       <div class="card-body">

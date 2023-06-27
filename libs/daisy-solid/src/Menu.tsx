@@ -11,13 +11,13 @@ import {
 
 export const MenuContext = createContext(createSignal());
 
-export function Menu<T>(
-  _props: ParentProps<{
-    initialValue?: T;
-    onChange?: (value?: T) => void;
-    class?: string;
-  }>
-) {
+export type MenuProps<T> = ParentProps<{
+  initialValue?: T;
+  onChange?: (value?: T) => void;
+  class?: string;
+}>;
+
+export function Menu<T>(_props: MenuProps<T>) {
   const props = mergeProps({ class: '' }, _props);
 
   const valueSignal = createSignal(props.initialValue);
@@ -33,11 +33,11 @@ export function Menu<T>(
   );
 }
 
-export function MenuItem<T>(
-  props: ParentProps<{
-    value: T;
-  }>
-) {
+export type MenuItemProps<T> = ParentProps<{
+  value: T;
+}>;
+
+export function MenuItem<T>(props: MenuItemProps<T>) {
   const [value, setValue] = useContext(MenuContext);
   const isActive = createSelector(value);
 

@@ -1,8 +1,10 @@
 import {
   Card,
-  Collapse,
+  Column,
   Menu,
   MenuItem,
+  Row,
+  Table,
   useDrawer,
 } from '@learner/daisy-solid';
 import { map } from 'rxjs';
@@ -25,12 +27,12 @@ function DictMenu() {
   });
 
   return (
-    <div class="bg-base-100 h-full w-80 p-4">
+    <div class="bg-base-100 h-full w-80 overflow-auto">
       <Show
         when={dict()}
         keyed
         fallback={
-          <Menu initialValue={dict()} onChange={setDict} class="gap-4">
+          <Menu initialValue={dict()} onChange={setDict} class="gap-4 p-4">
             <For each={dicts()}>
               {({ name, description }) => (
                 <MenuItem value={name}>
@@ -43,9 +45,18 @@ function DictMenu() {
           </Menu>
         }
       >
-        {(dictValue) => (
-          <Collapse title="章节" opened class="bg-base-200"></Collapse>
-        )}
+        {(dictValue) => {
+          const [] = createSignal();
+          return (
+            <Table
+              pinned
+              data={Array.from(Array(100), (_, i) => i + 1)}
+              rows={[<Row>A</Row>, <Row>B</Row>]}
+            >
+              <Column></Column>
+            </Table>
+          );
+        }}
       </Show>
     </div>
   );

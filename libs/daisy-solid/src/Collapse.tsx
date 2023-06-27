@@ -1,13 +1,13 @@
 import { JSX, ParentProps, mergeProps } from 'solid-js';
 
-export function Collapse(
-  _props: ParentProps<{
-    title?: string | JSX.Element;
-    class?: string;
-    opened?: boolean;
-    onToggle?: (opened: boolean) => void;
-  }>
-) {
+export type CollapseProps = ParentProps<{
+  title?: string | JSX.Element;
+  class?: string;
+  opened?: boolean;
+  onToggle?: (opened: boolean) => void;
+}>;
+
+export function Collapse(_props: CollapseProps) {
   const props = mergeProps(
     {
       class: '',

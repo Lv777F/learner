@@ -1,7 +1,11 @@
 import { ParentProps, VoidProps, mergeProps } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 
-export function Stats(props: ParentProps<{ class?: string }>) {
+export type StatsProps = ParentProps<{
+  class?: string;
+}>;
+
+export function Stats(props: StatsProps) {
   return (
     <ul class={'stats shadow-lg '.concat(props.class ?? '')}>
       {props.children}
@@ -9,13 +13,13 @@ export function Stats(props: ParentProps<{ class?: string }>) {
   );
 }
 
-export function Stat(
-  _props: VoidProps<{
-    value?: number;
-    title?: string;
-    type?: 'time' | 'count';
-  }>
-) {
+export type StatProps = VoidProps<{
+  value?: number;
+  title?: string;
+  type?: 'time' | 'count';
+}>;
+
+export function Stat(_props: StatProps) {
   const props = mergeProps({ value: 0, type: 'count' }, _props);
   return (
     <li class="stat place-items-center">

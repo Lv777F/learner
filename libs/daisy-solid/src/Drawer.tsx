@@ -8,11 +8,11 @@ import {
 
 const DrawerContext = createContext(createSignal(false));
 
-export function Drawer(
-  props: ParentProps<{
-    side?: JSX.Element;
-  }>
-) {
+export type DrawerProps = ParentProps<{
+  side?: JSX.Element;
+}>;
+
+export function Drawer(props: DrawerProps) {
   const stateSignal = createSignal(false);
 
   return (
