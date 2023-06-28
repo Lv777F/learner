@@ -13,24 +13,21 @@ export type DrawerProps = ParentProps<{
 }>;
 
 export function Drawer(props: DrawerProps) {
-  const stateSignal = createSignal(false);
+  const [opened, setOpened] = createSignal(false);
 
   return (
-    <DrawerContext.Provider value={stateSignal}>
+    <DrawerContext.Provider value={[opened, setOpened]}>
       <div class="drawer">
         <input
           class="drawer-toggle"
           type="checkbox"
-          aria-label="drawer"
-          checked={stateSignal[0]()}
+          aria-label="Drawer controller"
+          checked={opened()}
         />
 
         <div class="drawer-content">{props.children}</div>
         <div class="drawer-side">
-          <label
-            onClick={[stateSignal[1], false]}
-            class="drawer-overlay"
-          ></label>
+          <label onClick={[setOpened, false]} class="drawer-overlay"></label>
           {props.side}
         </div>
       </div>

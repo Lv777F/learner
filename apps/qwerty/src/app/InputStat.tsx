@@ -1,11 +1,17 @@
 import { Stat, Stats } from '@learner/daisy-solid';
-import { map, startWith, switchAll } from 'rxjs';
+import {
+  animationFrameScheduler,
+  map,
+  observeOn,
+  startWith,
+  switchAll,
+} from 'rxjs';
 import { from } from 'solid-js';
-import { stats$ } from '../service/stats';
+import { stats$$ } from '../service/stats';
 
 function InputStats() {
   const stats = from(
-    stats$.pipe(
+    stats$$.pipe(
       map(
         startWith({
           second: 0,
@@ -15,7 +21,8 @@ function InputStats() {
           correctRate: 0,
         })
       ),
-      switchAll()
+      switchAll(),
+      observeOn(animationFrameScheduler)
     )
   );
 

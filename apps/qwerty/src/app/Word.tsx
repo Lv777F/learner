@@ -34,7 +34,7 @@ function Word() {
                 return (
                   <span
                     class={
-                      (inputChar() ?? '') &&
+                      inputChar() &&
                       (isCorrect() ? 'text-success' : 'text-error')
                     }
                   >
@@ -49,7 +49,7 @@ function Word() {
           <rp>)</rp>
         </ruby>
       </dfn>
-      <span class="text-secondary text-[2vw]">
+      <span class="text-secondary h-[1.5em] text-[2vw]">
         {word()?.meanings.join(', ')}
       </span>
     </h2>

@@ -2,39 +2,38 @@ import { replayFrom, stepByStep } from '@learner/core';
 import {
   BehaviorSubject,
   Subject,
+  combineLatest,
+  debounceTime,
   delayWhen,
   filter,
   map,
   merge,
-  of,
   scan,
   shareReplay,
   skipWhile,
   switchMap,
-  take,
   tap,
 } from 'rxjs';
-import {
-  Word,
-  currentDict$$,
-  dictDB$,
-  getPaginatedItems,
-  syncLocalDict,
-} from './dicts';
+import { currentChapter$$ } from './chapters';
+import { getDictConfig } from './configs';
+import { Word, checkDict, currentDict$$, getChapter } from './dicts';
 
 const input$$ = new BehaviorSubject('');
 const jump$$ = new Subject<number>();
 const skip$$ = new Subject<void>();
 
 const words$ = currentDict$$.pipe(
-  delayWhen((dictName) =>
-    dictDB$.pipe(
-      take(1),
-      switchMap((db) => db.count(dictName)),
-      switchMap((count) => (count > 0 ? of(null) : syncLocalDict(dictName)))
+  delayWhen(checkDict),
+  switchMap((dictName) =>
+    combineLatest([
+      currentChapter$$.pipe(debounceTime(200)),
+      getDictConfig(dictName),
+    ]).pipe(
+      switchMap(([chapter, { chapterSize }]) =>
+        getChapter<Word>(dictName, chapter, chapterSize)
+      )
     )
   ),
-  switchMap((dictName) => getPaginatedItems<Word>(dictName, 0)),
   shareReplay({ bufferSize: 1, refCount: true })
 );
 

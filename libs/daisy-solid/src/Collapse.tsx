@@ -20,6 +20,7 @@ export function Collapse(_props: CollapseProps) {
     <div class={'collapse '.concat(props.class)}>
       <input
         type="checkbox"
+        aria-label="Collapse controller"
         checked={props.opened}
         onChange={(e) => props.onToggle?.(e.currentTarget.checked)}
       />

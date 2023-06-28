@@ -1,10 +1,11 @@
 import { DBSchema, openDB } from 'idb';
-import { from, shareReplay } from 'rxjs';
+import { from, map, shareReplay, switchMap, take } from 'rxjs';
 
 export interface DictConfig {
   repeatCount: number;
   chapterSize: number;
   shuffle: boolean;
+  currentChapter?: number;
 }
 
 interface ConfigDB extends DBSchema {
@@ -28,3 +29,18 @@ export const configDB$ = from(
     refCount: true,
   })
 );
+
+const DEFAULT_DICT_CONFIG: DictConfig = {
+  chapterSize: 20,
+  repeatCount: 1,
+  shuffle: false,
+  currentChapter: 1,
+};
+
+export function getDictConfig(dictName: string) {
+  return configDB$.pipe(
+    take(1),
+    switchMap((db) => db.get('dictionary', dictName)),
+    map((customConfig) => Object.assign({}, DEFAULT_DICT_CONFIG, customConfig))
+  );
+}

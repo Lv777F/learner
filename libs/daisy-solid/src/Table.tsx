@@ -4,41 +4,63 @@ import {
   For,
   JSX,
   ParentProps,
+  Ref,
+  Setter,
   Signal,
+  children,
   createContext,
   createEffect,
   createSelector,
   createSignal,
   mergeProps,
+  on,
   useContext,
 } from 'solid-js';
 
 export type TableProps<T> = ParentProps<{
-  data?: T[];
+  data?: Accessor<T[] | undefined>;
   ['pin-rows']?: boolean;
+  ['pin-cols']?: boolean;
   zebra?: boolean;
-  onSelect?: (row: T | null) => void;
+  onSelect?: (selected: T) => void;
+  defaultSelected?: T;
 }>;
 
-const TableContext = createContext<{
-  data: unknown[];
-  selected: Signal<any>;
-}>({
-  data: [],
-  selected: createSignal(),
-});
+const TableContext = createContext<
+  [
+    Accessor<unknown[] | undefined>,
+    Signal<unknown>,
+    (current?: unknown) => boolean
+  ]
+>([() => [], createSignal(), () => false]);
 
-export function Table<T>(_props: TableProps<T>) {
+export function Table<T = unknown>(_props: TableProps<T>) {
   const props = mergeProps(
-    { class: '', ['pin-rows']: false, zebra: false, data: [] as T[] },
+    {
+      class: '',
+      ['pin-rows']: false,
+      ['pin-cols']: false,
+      zebra: false,
+      data: (() => []) as Accessor<T[]>,
+    },
     _props
   );
 
-  const selected = createSignal<T | null>(null);
+  const [selected, setSelected] = createSignal<T | undefined>(
+    props.defaultSelected
+  );
 
-  createEffect(() => {
-    props.onSelect?.(selected[0]());
-  });
+  createEffect(
+    on(
+      selected,
+      (selected) => {
+        if (selected) props.onSelect?.(selected);
+      },
+      { defer: true }
+    )
+  );
+
+  const isActive = createSelector<unknown>(selected);
 
   return (
     <table
@@ -46,10 +68,15 @@ export function Table<T>(_props: TableProps<T>) {
       classList={{
         'table-pin-rows': props['pin-rows'],
         'table-zebra': props.zebra,
+        'table-pin-cols': props['pin-cols'],
       }}
     >
       <TableContext.Provider
-        value={{ data: props.data, selected: selected as Signal<any> }}
+        value={[
+          props.data,
+          [selected, setSelected as Setter<unknown>],
+          isActive,
+        ]}
       >
         {props.children}
       </TableContext.Provider>
@@ -57,25 +84,30 @@ export function Table<T>(_props: TableProps<T>) {
   );
 }
 
-export function Thead(props: ParentProps) {
-  return <thead>{props.children}</thead>;
+export function Thead(
+  props: ParentProps<{
+    class?: string;
+  }>
+) {
+  return <thead {...props}>{props.children}</thead>;
 }
 
 const RowContext = createContext();
 
 export function Tbody<T>(
-  props: FlowProps<{
-    children: (row: T, i: Accessor<number>) => JSX.Element;
-  }>
+  props: FlowProps<
+    { data?: Accessor<T[] | undefined>; class?: string },
+    (row: T, i: Accessor<number>) => JSX.Element
+  >
 ) {
-  const { data } = useContext(TableContext);
+  const data = props.data ?? useContext(TableContext)[0];
 
   return (
-    <tbody>
-      <For each={data as T[]}>
+    <tbody class={props.class}>
+      <For each={data()}>
         {(row, i) => (
           <RowContext.Provider value={row}>
-            {props.children(row, i)}
+            {props.children(row as T, i)}
           </RowContext.Provider>
         )}
       </For>
@@ -83,10 +115,12 @@ export function Tbody<T>(
   );
 }
 
-export function Tr(
+export function Row(
   _props: ParentProps<{
     class?: string;
     selectable?: boolean;
+    ref?: Ref<HTMLTableRowElement>;
+    onSelected?: (ref: HTMLTableRowElement) => void;
   }>
 ) {
   const props = mergeProps(
@@ -96,21 +130,26 @@ export function Tr(
     },
     _props
   );
-  const row = useContext(RowContext);
-  const {
-    selected: [selected, setSelected],
-  } = useContext(TableContext);
 
-  const isActive = createSelector(selected);
+  const row = useContext(RowContext);
+
+  const [, [, setSelected], isActive] = useContext(TableContext);
+
+  createEffect(() => {
+    if (isActive(row)) props.onSelected?.(props.ref as HTMLTableRowElement);
+  });
 
   return (
     <tr
       class={''.concat(props.class)}
+      ref={props.ref}
       classList={{
         'hover cursor-pointer': props.selectable,
-        'bg-base-300': isActive(row),
+        'bg-base-200': isActive(row),
       }}
-      onClick={() => props.selectable && setSelected(row)}
+      onClick={() => {
+        if (props.selectable) setSelected(row);
+      }}
     >
       {props.children}
     </tr>
@@ -119,14 +158,18 @@ export function Tr(
 
 const CellContext = createContext();
 
-export function Td<T, U extends keyof T>(
-  props: ParentProps<{ key?: U; children?: (cell: T[U] | T) => JSX.Element }>
+export function Cell<T, U extends keyof T>(
+  props: FlowProps<
+    { key?: U; head?: boolean },
+    (cell: T[U] | undefined) => JSX.Element
+  >
 ) {
   const row = useContext(RowContext) as T;
-  const cell = props.key ? row[props.key] : row;
+  const cell = props.key ? row[props.key] : undefined;
+  const cellContent = children(() => props.children(cell));
   return (
     <CellContext.Provider value={cell}>
-      <td>{props.children?.(cell)}</td>
+      {props.head ? <th>{cellContent()}</th> : <td>{cellContent()}</td>}
     </CellContext.Provider>
   );
 }

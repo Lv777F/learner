@@ -20,7 +20,7 @@ function Header() {
       </button>
       <select
         name="theme"
-        aria-label="theme"
+        aria-label="主题"
         data-choose-theme
         class="select w-full max-w-xs"
       >

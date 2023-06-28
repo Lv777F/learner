@@ -4,7 +4,6 @@ import {
   Subject,
   interval,
   map,
-  mergeAll,
   scan,
   shareReplay,
   startWith,
@@ -40,7 +39,7 @@ const start$$ = new Subject<void>();
 
 const second$ = interval(1000).pipe(
   windowToggle(start$$.pipe(startWith(null)), () => pause$$),
-  mergeAll(),
+  switchAll(),
   scan((acc) => acc + 1, 0)
 );
 
@@ -56,4 +55,4 @@ const stats$$ = inputStat$$.pipe(
 
 stats$$.pipe(switchAll()).subscribe();
 
-export { inputStat$$, pause$$, start$$, stats$$ as stats$ };
+export { inputStat$$, pause$$, start$$, stats$$ };
