@@ -6,6 +6,7 @@ import {
   map,
   of,
   shareReplay,
+  skip,
   switchMap,
   take,
 } from 'rxjs';
@@ -28,7 +29,13 @@ export interface Word {
   pronunciation: string;
 }
 
-export const currentDict$$ = new BehaviorSubject('CET-4');
+export const currentDict$$ = new BehaviorSubject(
+  localStorage.getItem('dictionary') ?? 'CET-4'
+);
+
+currentDict$$.pipe(skip(1)).subscribe((v) => {
+  localStorage.setItem('dictionary', v);
+});
 
 export const remoteDicts$ = loadYaml<{
   version: number;

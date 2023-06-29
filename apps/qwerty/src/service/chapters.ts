@@ -1,6 +1,12 @@
-import { combineLatest, map, switchMap, take } from 'rxjs';
+import { combineLatest, map, shareReplay, switchMap, take } from 'rxjs';
 import { getDictConfig } from './configs';
-import { checkDictLoaded, dictDB$ } from './dicts';
+import { checkDictLoaded, currentDict$$, dictDB$ } from './dicts';
+
+export const currentChapter$ = currentDict$$.pipe(
+  switchMap(getDictConfig),
+  map(({ currentChapter }) => currentChapter),
+  shareReplay({ bufferSize: 1, refCount: true })
+);
 
 export function getChapters(name: string) {
   return combineLatest([checkDictLoaded(name), getDictConfig(name)]).pipe(

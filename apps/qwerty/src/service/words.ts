@@ -4,7 +4,7 @@ import {
   Subject,
   debounceTime,
   delayWhen,
-  distinctUntilChanged,
+  distinctUntilKeyChanged,
   filter,
   map,
   merge,
@@ -26,14 +26,10 @@ export const words$ = currentDict$$.pipe(
   delayWhen(checkDictLoaded),
   switchMap((dictName) =>
     getDictConfig(dictName).pipe(
-      distinctUntilChanged(
-        (prev, curr) =>
-          prev.chapterSize === curr.chapterSize &&
-          prev.currentChapter === curr.currentChapter
-      ),
+      distinctUntilKeyChanged('currentChapter'),
       debounceTime(200),
-      switchMap(({ chapterSize, currentChapter: currentChapter }) =>
-        getChapter<Word>(dictName, currentChapter ?? 1, chapterSize)
+      switchMap(({ chapterSize, currentChapter, name }) =>
+        getChapter<Word>(name, currentChapter ?? 1, chapterSize)
       )
     )
   ),
