@@ -90,7 +90,7 @@ function getDictCount(name: string) {
   );
 }
 
-export function checkDictCount(name: string) {
+export function checkDictLoaded(name: string) {
   return getDictCount(name).pipe(
     switchMap((count) => (count > 0 ? of(count) : syncLocalDict(name)))
   );

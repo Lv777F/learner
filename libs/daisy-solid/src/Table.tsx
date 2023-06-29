@@ -22,7 +22,7 @@ export type TableProps<T> = ParentProps<{
   ['pin-rows']?: boolean;
   ['pin-cols']?: boolean;
   zebra?: boolean;
-  onSelect?: (selected: T) => void;
+  onSelect?: (selected: T | undefined) => void;
   selected?: Accessor<T>;
 }>;
 
@@ -53,7 +53,7 @@ export function Table<T = unknown>(_props: TableProps<T>) {
     on(
       selected,
       (selected) => {
-        if (selected) props.onSelect?.(selected);
+        props.onSelect?.(selected);
       },
       { defer: true }
     )
@@ -159,7 +159,7 @@ const CellContext = createContext();
 
 export function Cell<T, U extends keyof T>(
   props: FlowProps<
-    { key?: U; head?: boolean },
+    { key?: U; head?: boolean; class?: string },
     (cell: T[U] | undefined) => JSX.Element
   >
 ) {
@@ -168,7 +168,11 @@ export function Cell<T, U extends keyof T>(
   const cellContent = children(() => props.children(cell));
   return (
     <CellContext.Provider value={cell}>
-      {props.head ? <th>{cellContent()}</th> : <td>{cellContent()}</td>}
+      {props.head ? (
+        <th class={props.class}>{cellContent()}</th>
+      ) : (
+        <td class={props.class}>{cellContent()}</td>
+      )}
     </CellContext.Provider>
   );
 }

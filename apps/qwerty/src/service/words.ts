@@ -2,6 +2,8 @@ import { replayFrom, stepByStep } from '@learner/core';
 import {
   BehaviorSubject,
   Subject,
+  debounceTime,
+  delayWhen,
   distinctUntilChanged,
   filter,
   map,
@@ -14,13 +16,14 @@ import {
 } from 'rxjs';
 import { getChapter } from './chapters';
 import { getDictConfig } from './configs';
-import { Word, currentDict$$ } from './dicts';
+import { Word, checkDictLoaded, currentDict$$ } from './dicts';
 
 export const input$$ = new BehaviorSubject('');
 export const jump$$ = new Subject<number>();
 export const skip$$ = new Subject<void>();
 
 export const words$ = currentDict$$.pipe(
+  delayWhen(checkDictLoaded),
   switchMap((dictName) =>
     getDictConfig(dictName).pipe(
       distinctUntilChanged(
@@ -28,7 +31,8 @@ export const words$ = currentDict$$.pipe(
           prev.chapterSize === curr.chapterSize &&
           prev.currentChapter === curr.currentChapter
       ),
-      switchMap(({ chapterSize, currentChapter }) =>
+      debounceTime(200),
+      switchMap(({ chapterSize, currentChapter: currentChapter }) =>
         getChapter<Word>(dictName, currentChapter ?? 1, chapterSize)
       )
     )

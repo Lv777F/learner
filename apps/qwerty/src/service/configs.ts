@@ -11,6 +11,7 @@ import {
 } from 'rxjs';
 
 export interface DictConfig {
+  name: string;
   repeatCount: number;
   chapterSize: number;
   shuffle: boolean;
@@ -28,70 +29,72 @@ export const configDB$ = from(
   openDB<ConfigDB>('config', 1, {
     upgrade(db) {
       if (!db.objectStoreNames.contains('dictionary')) {
-        db.createObjectStore('dictionary', { keyPath: 'dictName' });
+        db.createObjectStore('dictionary', { keyPath: 'name' });
       }
     },
   })
 ).pipe(
   shareReplay({
     bufferSize: 1,
-    refCount: true,
+    refCount: false,
   })
 );
 
-const globalDictConfig: DictConfig = {
+const globalDictConfig: Omit<DictConfig, 'name'> = {
   chapterSize: 20,
   repeatCount: 1,
   shuffle: false,
-  currentChapter: 1,
+  currentChapter: 0,
 };
 
-const dictConfigMap = new Map<string, ReplaySubject<Partial<DictConfig>>>();
+const dictConfigMap = new Map<
+  string,
+  ReplaySubject<Partial<DictConfig> | undefined>
+>();
 
-function getRealDictConfig(dictName: string) {
+function getRealDictConfig(name: string) {
   return configDB$.pipe(
     take(1),
     switchMap((db) => {
-      if (!dictConfigMap.has(dictName)) {
-        const rsubj = new ReplaySubject<Partial<DictConfig>>();
-        dictConfigMap.set(dictName, rsubj);
-        db.get('dictionary', dictName).then((config) => {
-          rsubj.next(config ?? {});
+      if (!dictConfigMap.has(name)) {
+        const rsubj = new ReplaySubject<Partial<DictConfig> | undefined>();
+        dictConfigMap.set(name, rsubj);
+        db.get('dictionary', name).then((config) => {
+          rsubj.next(config);
         });
         return rsubj;
       } else {
-        return dictConfigMap.get(dictName)!;
+        return dictConfigMap.get(name)!;
       }
     })
   );
 }
 
-export function getDictConfig(dictName: string): Observable<DictConfig> {
-  return getRealDictConfig(dictName).pipe(
-    map((customConfig) => Object.assign({}, globalDictConfig, customConfig))
+export function getDictConfig(name: string): Observable<DictConfig> {
+  return getRealDictConfig(name).pipe(
+    map((customConfig) =>
+      Object.assign({ name }, globalDictConfig, customConfig)
+    )
   );
 }
 
-export function updateDictConfig(
-  dictName: string,
-  config: Partial<DictConfig>
-) {
+export function updateDictConfig(name: string, config: Partial<DictConfig>) {
   return configDB$.pipe(
     take(1),
     switchMap(async (db) => {
-      const oldConfig = await db.get('dictionary', dictName);
-      console.log(oldConfig);
+      const oldConfig = await db.get('dictionary', name);
+
       const newConfig = Object.assign(
-        {},
+        { name },
         oldConfig,
         config,
         'chapterSize' in config && config.chapterSize !== oldConfig?.chapterSize
-          ? { currentChapter: 1 }
+          ? { currentChapter: 0 }
           : {}
       );
 
-      await db.put('dictionary', newConfig, dictName);
-      dictConfigMap.get(dictName)?.next(newConfig);
+      await db.put('dictionary', newConfig);
+      dictConfigMap.get(name)?.next(newConfig);
     })
   );
 }

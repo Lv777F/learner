@@ -11,7 +11,7 @@ function Chapter() {
   const currentChapter = from(
     currentDict$$.pipe(
       switchMap(getDictConfig),
-      map(({ currentChapter }) => currentChapter)
+      map(({ currentChapter: currentChapter }) => currentChapter)
     )
   );
 
@@ -22,7 +22,7 @@ function Chapter() {
       onSelect={(chapter) =>
         updateDictConfig(currentDict$$.value, {
           currentChapter: chapter,
-        })
+        }).subscribe()
       }
       selected={currentChapter}
     >
@@ -37,7 +37,7 @@ function Chapter() {
             selectable
             onSelected={(el) => el.scrollIntoView({ block: 'center' })}
           >
-            <Cell>{() => row + 1}</Cell>
+            <Cell class="select-none">{() => row + 1}</Cell>
           </Row>
         )}
       </Tbody>

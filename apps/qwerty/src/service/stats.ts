@@ -38,7 +38,7 @@ export const pause$$ = new Subject<void>();
 export const start$$ = new Subject<void>();
 
 const second$ = interval(1000).pipe(
-  windowToggle(start$$.pipe(startWith(null)), () => pause$$),
+  windowToggle(start$$, () => pause$$),
   switchAll(),
   scan((acc) => acc + 1, 0)
 );
@@ -46,6 +46,10 @@ const second$ = interval(1000).pipe(
 export const stats$$ = inputStat$$.pipe(
   map((inputStat$) =>
     inputStat$.pipe(
+      startWith({
+        correct: 0,
+        incorrect: 0,
+      }),
       stats(second$),
       shareReplay({ bufferSize: 1, refCount: true })
     )
