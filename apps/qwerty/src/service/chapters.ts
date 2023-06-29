@@ -1,14 +1,15 @@
-import { BehaviorSubject, combineLatest, map, switchMap, take } from 'rxjs';
+import { combineLatest, map, shareReplay, switchMap, take } from 'rxjs';
 import { getDictConfig } from './configs';
-import { checkDict, currentDict$$, dictDB$ } from './dicts';
+import { checkDictLoaded, currentDict$$, dictDB$ } from './dicts';
 
-// TODO store in every dict
-export const currentChapter$$ = new BehaviorSubject(0);
-
-currentDict$$.subscribe(() => currentChapter$$.next(0));
+export const currentChapter$ = currentDict$$.pipe(
+  switchMap(getDictConfig),
+  map(({ currentChapter }) => currentChapter),
+  shareReplay({ bufferSize: 1, refCount: true })
+);
 
 export function getChapters(name: string) {
-  return combineLatest([checkDict(name), getDictConfig(name)]).pipe(
+  return combineLatest([checkDictLoaded(name), getDictConfig(name)]).pipe(
     map(([total, { chapterSize }]) =>
       Array.from({ length: Math.ceil(total / chapterSize) }, (_, i) => i)
     )
@@ -20,17 +21,10 @@ export function getChapter<T>(name: string, page: number, pageSize = 20) {
     take(1),
     switchMap(
       (db) =>
-        db
-          .transaction(name, 'readonly')
-          .objectStore(name)
-          .getAll(
-            IDBKeyRange.bound(
-              page * pageSize,
-              (page + 1) * pageSize,
-              false,
-              true
-            )
-          ) as Promise<T[]>
+        db.getAll(
+          name,
+          IDBKeyRange.bound(page * pageSize, (page + 1) * pageSize, false, true)
+        ) as Promise<T[]>
     )
   );
 }

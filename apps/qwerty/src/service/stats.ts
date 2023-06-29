@@ -13,7 +13,7 @@ import {
 } from 'rxjs';
 import { input$$, word$$ } from './words';
 
-const inputStat$$ = word$$.pipe(
+export const inputStat$$ = word$$.pipe(
   map((words$) =>
     words$.pipe(
       inputStat(({ word }) =>
@@ -33,26 +33,26 @@ const inputStat$$ = word$$.pipe(
   shareReplay({ bufferSize: 1, refCount: true })
 );
 
-const pause$$ = new Subject<void>();
+export const pause$$ = new Subject<void>();
 
-const start$$ = new Subject<void>();
+export const start$$ = new Subject<void>();
 
 const second$ = interval(1000).pipe(
-  windowToggle(start$$.pipe(startWith(null)), () => pause$$),
+  windowToggle(start$$, () => pause$$),
   switchAll(),
   scan((acc) => acc + 1, 0)
 );
 
-const stats$$ = inputStat$$.pipe(
+export const stats$$ = inputStat$$.pipe(
   map((inputStat$) =>
     inputStat$.pipe(
+      startWith({
+        correct: 0,
+        incorrect: 0,
+      }),
       stats(second$),
       shareReplay({ bufferSize: 1, refCount: true })
     )
   ),
   shareReplay({ bufferSize: 1, refCount: true })
 );
-
-stats$$.pipe(switchAll()).subscribe();
-
-export { inputStat$$, pause$$, start$$, stats$$ };

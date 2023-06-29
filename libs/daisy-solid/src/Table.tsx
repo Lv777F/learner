@@ -22,8 +22,8 @@ export type TableProps<T> = ParentProps<{
   ['pin-rows']?: boolean;
   ['pin-cols']?: boolean;
   zebra?: boolean;
-  onSelect?: (selected: T) => void;
-  defaultSelected?: T;
+  onSelect?: (selected: T | undefined) => void;
+  selected?: Accessor<T>;
 }>;
 
 const TableContext = createContext<
@@ -35,6 +35,8 @@ const TableContext = createContext<
 >([() => [], createSignal(), () => false]);
 
 export function Table<T = unknown>(_props: TableProps<T>) {
+  const [selected, setSelected] = createSignal<T | undefined>();
+
   const props = mergeProps(
     {
       class: '',
@@ -42,25 +44,22 @@ export function Table<T = unknown>(_props: TableProps<T>) {
       ['pin-cols']: false,
       zebra: false,
       data: (() => []) as Accessor<T[]>,
+      selected,
     },
     _props
-  );
-
-  const [selected, setSelected] = createSignal<T | undefined>(
-    props.defaultSelected
   );
 
   createEffect(
     on(
       selected,
       (selected) => {
-        if (selected) props.onSelect?.(selected);
+        props.onSelect?.(selected);
       },
       { defer: true }
     )
   );
 
-  const isActive = createSelector<unknown>(selected);
+  const isActive = createSelector<unknown>(props.selected);
 
   return (
     <table
@@ -74,7 +73,7 @@ export function Table<T = unknown>(_props: TableProps<T>) {
       <TableContext.Provider
         value={[
           props.data,
-          [selected, setSelected as Setter<unknown>],
+          [props.selected, setSelected as Setter<unknown>],
           isActive,
         ]}
       >
@@ -160,7 +159,7 @@ const CellContext = createContext();
 
 export function Cell<T, U extends keyof T>(
   props: FlowProps<
-    { key?: U; head?: boolean },
+    { key?: U; head?: boolean; class?: string },
     (cell: T[U] | undefined) => JSX.Element
   >
 ) {
@@ -169,7 +168,11 @@ export function Cell<T, U extends keyof T>(
   const cellContent = children(() => props.children(cell));
   return (
     <CellContext.Provider value={cell}>
-      {props.head ? <th>{cellContent()}</th> : <td>{cellContent()}</td>}
+      {props.head ? (
+        <th class={props.class}>{cellContent()}</th>
+      ) : (
+        <td class={props.class}>{cellContent()}</td>
+      )}
     </CellContext.Provider>
   );
 }
