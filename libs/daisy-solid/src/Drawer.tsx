@@ -1,34 +1,33 @@
-import { JSX, ParentProps, createContext, useContext } from 'solid-js';
+import {
+  JSX,
+  ParentProps,
+  createContext,
+  createSignal,
+  useContext,
+} from 'solid-js';
 
-export type ToggleFunction = (show?: boolean) => void;
+const DrawerContext = createContext(createSignal(false));
 
-const DrawerContext = createContext<ToggleFunction>(() => null);
+export type DrawerProps = ParentProps<{
+  side?: JSX.Element;
+}>;
 
-export function Drawer(
-  props: ParentProps<{
-    side?: JSX.Element;
-  }>
-) {
-  let toggleRef: HTMLInputElement | undefined;
-
-  const toggle: ToggleFunction = (show) => {
-    if (!toggleRef) throw new Error('toggleRef is undefined');
-    toggleRef.checked = show ?? !toggleRef.checked;
-  };
+export function Drawer(props: DrawerProps) {
+  const [opened, setOpened] = createSignal(false);
 
   return (
-    <DrawerContext.Provider value={toggle}>
+    <DrawerContext.Provider value={[opened, setOpened]}>
       <div class="drawer">
         <input
           class="drawer-toggle"
           type="checkbox"
-          aria-label="drawer"
-          ref={toggleRef}
+          aria-label="Drawer controller"
+          checked={opened()}
         />
 
         <div class="drawer-content">{props.children}</div>
         <div class="drawer-side">
-          <label onClick={[toggle, false]} class="drawer-overlay"></label>
+          <label onClick={[setOpened, false]} class="drawer-overlay"></label>
           {props.side}
         </div>
       </div>
@@ -36,4 +35,4 @@ export function Drawer(
   );
 }
 
-export const useDrawerToggler = () => useContext(DrawerContext);
+export const useDrawer = () => useContext(DrawerContext);

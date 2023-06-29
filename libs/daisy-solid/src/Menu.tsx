@@ -5,48 +5,62 @@ import {
   createEffect,
   createSelector,
   createSignal,
+  mergeProps,
+  on,
   useContext,
 } from 'solid-js';
 
-export const MenuContext = createContext(createSignal());
+export const MenuContext = createContext(createSignal<unknown>());
 
-export function Menu<T>(
-  props: ParentProps<{
-    initialValue?: T;
-    onChange?: (value?: T) => void;
-  }>
-) {
-  const valueSignal = createSignal(props.initialValue);
+export type MenuProps<T> = ParentProps<{
+  defaultValue?: T;
+  onChange?: (value: T | undefined) => void;
+  class?: string;
+}>;
 
-  createEffect(() => {
-    props.onChange?.(valueSignal[0]());
-  });
+export function Menu<T>(_props: MenuProps<T>) {
+  const props = mergeProps({ class: '' }, _props);
+
+  const [value, setValue] = createSignal<T | undefined>(props.defaultValue);
+
+  createEffect(
+    on(
+      value,
+      () => {
+        props.onChange?.(value());
+      },
+      { defer: true }
+    )
+  );
 
   return (
-    <MenuContext.Provider value={valueSignal as Signal<unknown>}>
-      <ul class="menu bg-base-100 h-full w-80 gap-y-4 p-4">{props.children}</ul>
+    <MenuContext.Provider value={[value, setValue] as Signal<unknown>}>
+      <ul class={'menu '.concat(props.class)}>{props.children}</ul>
     </MenuContext.Provider>
   );
 }
 
-export function MenuItem<T>(
-  props: ParentProps<{
-    value: T;
-  }>
-) {
+export type MenuItemProps<T> = ParentProps<{
+  value: T;
+  disabled?: boolean;
+}>;
+
+export function MenuItem<T = unknown>(props: MenuItemProps<T>) {
   const [value, setValue] = useContext(MenuContext);
   const isActive = createSelector(value);
 
   return (
     <li>
-      <div
+      <a
         classList={{
           active: isActive(props.value),
         }}
-        onClick={[setValue, props.value]}
+        onClick={() => {
+          if (!props.disabled) setValue(props.value as unknown);
+        }}
       >
         {props.children}
-      </div>
+      </a>
     </li>
   );
 }

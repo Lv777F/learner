@@ -26,7 +26,7 @@ function Main() {
         class="fixed h-0 w-0 opacity-0"
         type="text"
         ref={wordInputRef}
-        aria-label="word input"
+        aria-label="单词输入"
         onBlur={() => pause$$.next()}
         onFocus={() => start$$.next()}
         onInput={(e) => input$$.next(e.currentTarget.value)}

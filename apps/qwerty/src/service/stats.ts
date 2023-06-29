@@ -4,11 +4,11 @@ import {
   Subject,
   interval,
   map,
-  mergeAll,
   scan,
   shareReplay,
   startWith,
   switchAll,
+  tap,
   windowToggle,
 } from 'rxjs';
 import { input$$, word$$ } from './words';
@@ -19,7 +19,12 @@ const inputStat$$ = word$$.pipe(
       inputStat(({ word }) =>
         input$$.pipe(
           filterBackspace(),
-          map((input) => word.startsWith(input))
+          map((input) => word.startsWith(input)),
+          tap((correct) => {
+            if (!correct) {
+              input$$.next('');
+            }
+          })
         )
       ),
       shareReplay({ bufferSize: 1, refCount: true })
@@ -34,7 +39,7 @@ const start$$ = new Subject<void>();
 
 const second$ = interval(1000).pipe(
   windowToggle(start$$.pipe(startWith(null)), () => pause$$),
-  mergeAll(),
+  switchAll(),
   scan((acc) => acc + 1, 0)
 );
 
@@ -50,4 +55,4 @@ const stats$$ = inputStat$$.pipe(
 
 stats$$.pipe(switchAll()).subscribe();
 
-export { inputStat$$, pause$$, start$$, stats$$ as stats$ };
+export { inputStat$$, pause$$, start$$, stats$$ };

@@ -60,8 +60,8 @@ export function loadRemoteDict(name: string) {
     take(1),
     map(({ dictionaries }) => dictionaries.find((dict) => dict.name === name)),
     switchMap((dict) => {
-      if (dict) return loadYaml<Word[]>(dict.path);
-      throw new Error(`Remote dictionary ${name} not found`);
+      if (!dict) throw new Error(`Remote dictionary ${name} not found`);
+      return loadYaml<Word[]>(dict.path);
     })
   );
 }
@@ -76,25 +76,21 @@ export function syncLocalDict(name: string) {
           const store = tx.objectStore(name);
           await store.clear();
           words.forEach((word, i) => store.add(word, i));
-          return tx.done;
+          return tx.done.then(() => words.length);
         })
       )
     )
   );
 }
 
-export function getPaginatedItems<T>(
-  dictionaryName: string,
-  page: number,
-  pageSize = 20
-) {
+export function getChapter<T>(name: string, page: number, pageSize = 20) {
   return dictDB$.pipe(
     take(1),
     switchMap(
       (db) =>
         db
-          .transaction(dictionaryName, 'readonly')
-          .objectStore(dictionaryName)
+          .transaction(name, 'readonly')
+          .objectStore(name)
           .getAll(
             IDBKeyRange.bound(
               page * pageSize,
@@ -104,5 +100,18 @@ export function getPaginatedItems<T>(
             )
           ) as Promise<T[]>
     )
+  );
+}
+
+export function getDictCount(name: string) {
+  return dictDB$.pipe(
+    take(1),
+    switchMap((db) => db.count(name))
+  );
+}
+
+export function checkDict(name: string) {
+  return getDictCount(name).pipe(
+    switchMap((count) => (count > 0 ? of(count) : syncLocalDict(name)))
   );
 }
