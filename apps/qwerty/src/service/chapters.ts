@@ -1,14 +1,9 @@
-import { BehaviorSubject, combineLatest, map, switchMap, take } from 'rxjs';
+import { combineLatest, map, switchMap, take } from 'rxjs';
 import { getDictConfig } from './configs';
-import { checkDict, currentDict$$, dictDB$ } from './dicts';
-
-// TODO store in every dict
-export const currentChapter$$ = new BehaviorSubject(0);
-
-currentDict$$.subscribe(() => currentChapter$$.next(0));
+import { checkDictCount, dictDB$ } from './dicts';
 
 export function getChapters(name: string) {
-  return combineLatest([checkDict(name), getDictConfig(name)]).pipe(
+  return combineLatest([checkDictCount(name), getDictConfig(name)]).pipe(
     map(([total, { chapterSize }]) =>
       Array.from({ length: Math.ceil(total / chapterSize) }, (_, i) => i)
     )

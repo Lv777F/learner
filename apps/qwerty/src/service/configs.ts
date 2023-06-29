@@ -1,5 +1,14 @@
 import { DBSchema, openDB } from 'idb';
-import { from, map, shareReplay, switchMap, take } from 'rxjs';
+
+import {
+  Observable,
+  ReplaySubject,
+  from,
+  map,
+  shareReplay,
+  switchMap,
+  take,
+} from 'rxjs';
 
 export interface DictConfig {
   repeatCount: number;
@@ -11,7 +20,7 @@ export interface DictConfig {
 interface ConfigDB extends DBSchema {
   dictionary: {
     key: string;
-    value: DictConfig;
+    value: Partial<DictConfig>;
   };
 }
 
@@ -30,17 +39,59 @@ export const configDB$ = from(
   })
 );
 
-const DEFAULT_DICT_CONFIG: DictConfig = {
+const globalDictConfig: DictConfig = {
   chapterSize: 20,
   repeatCount: 1,
   shuffle: false,
   currentChapter: 1,
 };
 
-export function getDictConfig(dictName: string) {
+const dictConfigMap = new Map<string, ReplaySubject<Partial<DictConfig>>>();
+
+function getRealDictConfig(dictName: string) {
   return configDB$.pipe(
     take(1),
-    switchMap((db) => db.get('dictionary', dictName)),
-    map((customConfig) => Object.assign({}, DEFAULT_DICT_CONFIG, customConfig))
+    switchMap((db) => {
+      if (!dictConfigMap.has(dictName)) {
+        const rsubj = new ReplaySubject<Partial<DictConfig>>();
+        dictConfigMap.set(dictName, rsubj);
+        db.get('dictionary', dictName).then((config) => {
+          rsubj.next(config ?? {});
+        });
+        return rsubj;
+      } else {
+        return dictConfigMap.get(dictName)!;
+      }
+    })
+  );
+}
+
+export function getDictConfig(dictName: string): Observable<DictConfig> {
+  return getRealDictConfig(dictName).pipe(
+    map((customConfig) => Object.assign({}, globalDictConfig, customConfig))
+  );
+}
+
+export function updateDictConfig(
+  dictName: string,
+  config: Partial<DictConfig>
+) {
+  return configDB$.pipe(
+    take(1),
+    switchMap(async (db) => {
+      const oldConfig = await db.get('dictionary', dictName);
+      console.log(oldConfig);
+      const newConfig = Object.assign(
+        {},
+        oldConfig,
+        config,
+        'chapterSize' in config && config.chapterSize !== oldConfig?.chapterSize
+          ? { currentChapter: 1 }
+          : {}
+      );
+
+      await db.put('dictionary', newConfig, dictName);
+      dictConfigMap.get(dictName)?.next(newConfig);
+    })
   );
 }

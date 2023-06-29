@@ -2,9 +2,7 @@ import { replayFrom, stepByStep } from '@learner/core';
 import {
   BehaviorSubject,
   Subject,
-  combineLatest,
-  debounceTime,
-  delayWhen,
+  distinctUntilChanged,
   filter,
   map,
   merge,
@@ -14,32 +12,33 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { currentChapter$$, getChapter } from './chapters';
+import { getChapter } from './chapters';
 import { getDictConfig } from './configs';
-import { Word, checkDict, currentDict$$ } from './dicts';
+import { Word, currentDict$$ } from './dicts';
 
-const input$$ = new BehaviorSubject('');
-const jump$$ = new Subject<number>();
-const skip$$ = new Subject<void>();
+export const input$$ = new BehaviorSubject('');
+export const jump$$ = new Subject<number>();
+export const skip$$ = new Subject<void>();
 
-const words$ = currentDict$$.pipe(
-  delayWhen(checkDict),
+export const words$ = currentDict$$.pipe(
   switchMap((dictName) =>
-    combineLatest([
-      currentChapter$$.pipe(debounceTime(200)),
-      getDictConfig(dictName),
-    ]).pipe(
-      switchMap(([chapter, { chapterSize }]) =>
-        getChapter<Word>(dictName, chapter, chapterSize)
+    getDictConfig(dictName).pipe(
+      distinctUntilChanged(
+        (prev, curr) =>
+          prev.chapterSize === curr.chapterSize &&
+          prev.currentChapter === curr.currentChapter
+      ),
+      switchMap(({ chapterSize, currentChapter }) =>
+        getChapter<Word>(dictName, currentChapter ?? 1, chapterSize)
       )
     )
   ),
   shareReplay({ bufferSize: 1, refCount: true })
 );
 
-const pass$$ = new Subject<void>();
+export const pass$$ = new Subject<void>();
 
-const word$$ = words$.pipe(
+export const word$$ = words$.pipe(
   replayFrom(jump$$),
   map((word$) =>
     word$.pipe(
@@ -64,5 +63,3 @@ const word$$ = words$.pipe(
 );
 
 export const pass$ = pass$$.asObservable();
-
-export { input$$, jump$$, skip$$, word$$, words$ };

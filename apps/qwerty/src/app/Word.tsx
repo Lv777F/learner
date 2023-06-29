@@ -49,7 +49,7 @@ function Word() {
           <rp>)</rp>
         </ruby>
       </dfn>
-      <pre class="text-secondary h-[1.5em] text-[2vw]">
+      <pre class="text-secondary h-[1.5em] whitespace-pre-wrap text-[2vw]">
         {word()?.meanings.join('\n')}
       </pre>
     </h2>

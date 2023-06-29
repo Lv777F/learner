@@ -30,14 +30,10 @@ function DictMenu() {
           )}
         </For>
       </Menu>
-      <Show when={dict()} keyed>
-        {(dictName) => (
-          <>
-            <div class="w-80 overflow-auto">
-              <Chapter dictName={dictName}></Chapter>
-            </div>
-          </>
-        )}
+      <Show when={dict()}>
+        <div class="w-80 overflow-auto">
+          <Chapter></Chapter>
+        </div>
       </Show>
     </div>
   );
