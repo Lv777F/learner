@@ -83,27 +83,7 @@ export function syncLocalDict(name: string) {
   );
 }
 
-export function getChapter<T>(name: string, page: number, pageSize = 20) {
-  return dictDB$.pipe(
-    take(1),
-    switchMap(
-      (db) =>
-        db
-          .transaction(name, 'readonly')
-          .objectStore(name)
-          .getAll(
-            IDBKeyRange.bound(
-              page * pageSize,
-              (page + 1) * pageSize,
-              false,
-              true
-            )
-          ) as Promise<T[]>
-    )
-  );
-}
-
-export function getDictCount(name: string) {
+function getDictCount(name: string) {
   return dictDB$.pipe(
     take(1),
     switchMap((db) => db.count(name))
