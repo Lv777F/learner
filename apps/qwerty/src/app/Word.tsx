@@ -49,9 +49,9 @@ function Word() {
           <rp>)</rp>
         </ruby>
       </dfn>
-      <span class="text-secondary h-[1.5em] text-[2vw]">
-        {word()?.meanings.join(', ')}
-      </span>
+      <pre class="text-secondary h-[1.5em] text-[2vw]">
+        {word()?.meanings.join('\n')}
+      </pre>
     </h2>
   );
 }

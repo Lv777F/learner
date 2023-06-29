@@ -14,9 +14,9 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { currentChapter$$ } from './chapters';
+import { currentChapter$$, getChapter } from './chapters';
 import { getDictConfig } from './configs';
-import { Word, checkDict, currentDict$$, getChapter } from './dicts';
+import { Word, checkDict, currentDict$$ } from './dicts';
 
 const input$$ = new BehaviorSubject('');
 const jump$$ = new Subject<number>();
