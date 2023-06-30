@@ -1,19 +1,14 @@
 import { Cell, Row, Table, Tbody, Thead } from '@learner/daisy-solid';
-import { map, switchMap } from 'rxjs';
+import { switchMap } from 'rxjs';
 import { from } from 'solid-js';
-import { getChapters } from '../service/chapters';
-import { getDictConfig, updateDictConfig } from '../service/configs';
+import { currentChapter$, getChapters } from '../service/chapters';
+import { updateDictConfig } from '../service/configs';
 import { currentDict$$ } from '../service/dicts';
 
 function Chapter() {
   const chapters = from(currentDict$$.pipe(switchMap(getChapters)));
 
-  const currentChapter = from(
-    currentDict$$.pipe(
-      switchMap(getDictConfig),
-      map(({ currentChapter: currentChapter }) => currentChapter)
-    )
-  );
+  const currentChapter = from(currentChapter$);
 
   return (
     <Table

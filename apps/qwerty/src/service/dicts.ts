@@ -62,7 +62,7 @@ export const dictDB$ = remoteDicts$.pipe(
   shareReplay({ bufferSize: 1, refCount: true })
 );
 
-export function loadRemoteDict(name: string) {
+function loadRemoteDict(name: string) {
   return remoteDicts$.pipe(
     take(1),
     map(({ dictionaries }) => dictionaries.find((dict) => dict.name === name)),

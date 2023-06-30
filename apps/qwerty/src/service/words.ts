@@ -36,8 +36,6 @@ export const words$ = currentDict$$.pipe(
   shareReplay({ bufferSize: 1, refCount: true })
 );
 
-export const pass$$ = new Subject<void>();
-
 export const word$$ = words$.pipe(
   replayFrom(jump$$),
   map((word$) =>
@@ -47,7 +45,6 @@ export const word$$ = words$.pipe(
           input$$.pipe(
             filter((input) => word === input),
             tap(() => {
-              pass$$.next();
               input$$.next('');
             }),
             scan((acc) => acc + 1, 0),
@@ -61,5 +58,3 @@ export const word$$ = words$.pipe(
   ),
   shareReplay({ bufferSize: 1, refCount: true })
 );
-
-export const pass$ = pass$$.asObservable();
