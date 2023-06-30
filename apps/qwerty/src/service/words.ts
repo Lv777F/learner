@@ -15,23 +15,18 @@ import {
   tap,
 } from 'rxjs';
 import { getChapter } from './chapters';
-import { getDictConfig } from './configs';
-import { Word, checkDictLoaded, currentDict$$ } from './dicts';
+import { Word, checkDictLoaded, currentDictConfig$ } from './dicts';
 
 export const input$$ = new BehaviorSubject('');
 export const jump$$ = new Subject<number>();
 export const skip$$ = new Subject<void>();
 
-export const words$ = currentDict$$.pipe(
-  delayWhen(checkDictLoaded),
-  switchMap((dictName) =>
-    getDictConfig(dictName).pipe(
-      distinctUntilKeyChanged('currentChapter'),
-      debounceTime(200),
-      switchMap(({ chapterSize, currentChapter, name }) =>
-        getChapter<Word>(name, currentChapter ?? 1, chapterSize)
-      )
-    )
+export const words$ = currentDictConfig$.pipe(
+  delayWhen(({ name }) => checkDictLoaded(name)),
+  distinctUntilKeyChanged('currentChapter'),
+  debounceTime(200),
+  switchMap(({ chapterSize, currentChapter, name }) =>
+    getChapter<Word>(name, currentChapter ?? 1, chapterSize)
   ),
   shareReplay({ bufferSize: 1, refCount: true })
 );
@@ -48,7 +43,7 @@ export const word$$ = words$.pipe(
               input$$.next('');
             }),
             scan((acc) => acc + 1, 0),
-            skipWhile((passCount) => passCount < 3)
+            skipWhile((passCount) => passCount < 1)
           ),
           skip$$
         )

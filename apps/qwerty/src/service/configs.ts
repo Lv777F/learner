@@ -15,7 +15,7 @@ export interface DictConfig {
   repeatCount: number;
   chapterSize: number;
   shuffle: boolean;
-  currentChapter?: number;
+  currentChapter: number;
 }
 
 interface ConfigDB extends DBSchema {
@@ -93,8 +93,10 @@ export function updateDictConfig(name: string, config: Partial<DictConfig>) {
           : {}
       );
 
-      await db.put('dictionary', newConfig);
-      dictConfigMap.get(name)?.next(newConfig);
+      return await db.put('dictionary', newConfig).then((name) => {
+        dictConfigMap.get(name)?.next(newConfig);
+        return name;
+      });
     })
   );
 }

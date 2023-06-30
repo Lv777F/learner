@@ -1,10 +1,17 @@
-import { combineLatest, map, shareReplay, switchMap, take } from 'rxjs';
+import {
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  switchMap,
+  take,
+} from 'rxjs';
 import { getDictConfig } from './configs';
-import { checkDictLoaded, currentDict$$, dictDB$ } from './dicts';
+import { checkDictLoaded, currentDictConfig$, dictDB$ } from './dicts';
 
-export const currentChapter$ = currentDict$$.pipe(
-  switchMap(getDictConfig),
+export const currentChapter$ = currentDictConfig$.pipe(
   map(({ currentChapter }) => currentChapter),
+  distinctUntilChanged(),
   shareReplay({ bufferSize: 1, refCount: true })
 );
 

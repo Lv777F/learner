@@ -8,7 +8,7 @@ import { currentDict$$ } from '../service/dicts';
 function Chapter() {
   const chapters = from(currentDict$$.pipe(switchMap(getChapters)));
 
-  const currentChapter = from(currentChapter$);
+  const chapter = from(currentChapter$);
 
   return (
     <Table
@@ -19,7 +19,7 @@ function Chapter() {
           currentChapter: chapter,
         }).subscribe()
       }
-      selected={currentChapter}
+      selected={chapter}
     >
       <Thead>
         <Row>
@@ -32,7 +32,9 @@ function Chapter() {
             selectable
             onSelected={(el) => el.scrollIntoView({ block: 'center' })}
           >
-            <Cell class="select-none">{() => row + 1}</Cell>
+            <Cell class="select-none" head>
+              {() => row + 1}
+            </Cell>
           </Row>
         )}
       </Tbody>
