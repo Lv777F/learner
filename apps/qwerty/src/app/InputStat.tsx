@@ -1,11 +1,5 @@
 import { Stat, Stats } from '@learner/daisy-solid';
-import {
-  animationFrameScheduler,
-  map,
-  observeOn,
-  startWith,
-  switchAll,
-} from 'rxjs';
+import { map, startWith, switchAll } from 'rxjs';
 import { from } from 'solid-js';
 import { stats$$ } from '../service/stats';
 
@@ -21,8 +15,7 @@ function InputStats() {
           correctRate: 0,
         })
       ),
-      switchAll(),
-      observeOn(animationFrameScheduler)
+      switchAll()
     )
   );
 

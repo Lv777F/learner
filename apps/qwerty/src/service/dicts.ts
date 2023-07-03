@@ -10,6 +10,7 @@ import {
   switchMap,
   take,
 } from 'rxjs';
+import { getDictConfig } from './configs';
 
 const DICTIONARY_INDEX_PATH = '/dictionaries/index.yaml';
 
@@ -31,6 +32,11 @@ export interface Word {
 
 export const currentDict$$ = new BehaviorSubject(
   localStorage.getItem('dictionary') ?? 'CET-4'
+);
+
+export const currentDictConfig$ = currentDict$$.pipe(
+  switchMap(getDictConfig),
+  shareReplay({ bufferSize: 1, refCount: true })
 );
 
 currentDict$$.pipe(skip(1)).subscribe((v) => {
@@ -62,7 +68,7 @@ export const dictDB$ = remoteDicts$.pipe(
   shareReplay({ bufferSize: 1, refCount: true })
 );
 
-export function loadRemoteDict(name: string) {
+function loadRemoteDict(name: string) {
   return remoteDicts$.pipe(
     take(1),
     map(({ dictionaries }) => dictionaries.find((dict) => dict.name === name)),
