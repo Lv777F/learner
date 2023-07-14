@@ -3,7 +3,7 @@ import {
   BehaviorSubject,
   Subject,
   debounceTime,
-  delayWhen,
+  delay,
   distinctUntilKeyChanged,
   filter,
   map,
@@ -12,17 +12,16 @@ import {
   shareReplay,
   skipWhile,
   switchMap,
-  tap,
+  tap
 } from 'rxjs';
 import { getChapter } from './chapters';
-import { Word, checkDictLoaded, currentDictConfig$ } from './dicts';
+import { Word, currentDictConfig$ } from './dicts';
 
 export const input$$ = new BehaviorSubject('');
 export const jump$$ = new Subject<number>();
 export const skip$$ = new Subject<void>();
 
 export const words$ = currentDictConfig$.pipe(
-  delayWhen(({ name }) => checkDictLoaded(name)),
   distinctUntilKeyChanged('currentChapter'),
   debounceTime(200),
   switchMap(({ chapterSize, currentChapter, name }) =>
@@ -48,6 +47,7 @@ export const word$$ = words$.pipe(
           skip$$
         )
       ),
+      delay(0),
       shareReplay({ bufferSize: 1, refCount: true })
     )
   ),

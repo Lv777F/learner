@@ -6,6 +6,6 @@ export function filterBackspace() {
       startWith(''),
       pairwise(),
       filter(([prev, curr]) => curr.length > prev.length),
-      map(([, curr]) => curr)
+      map(([, curr]) => curr),
     );
 }
