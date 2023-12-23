@@ -30,7 +30,7 @@ const TableContext = createContext<
   [
     Accessor<unknown[] | undefined>,
     Signal<unknown>,
-    (current?: unknown) => boolean
+    (current?: unknown) => boolean,
   ]
 >([() => [], createSignal(), () => false]);
 
@@ -46,7 +46,7 @@ export function Table<T = unknown>(_props: TableProps<T>) {
       data: (() => []) as Accessor<T[]>,
       selected,
     },
-    _props
+    _props,
   );
 
   createEffect(
@@ -55,8 +55,8 @@ export function Table<T = unknown>(_props: TableProps<T>) {
       (selected) => {
         props.onSelect?.(selected);
       },
-      { defer: true }
-    )
+      { defer: true },
+    ),
   );
 
   const isActive = createSelector<unknown>(props.selected);
@@ -86,7 +86,7 @@ export function Table<T = unknown>(_props: TableProps<T>) {
 export function Thead(
   props: ParentProps<{
     class?: string;
-  }>
+  }>,
 ) {
   return <thead {...props}>{props.children}</thead>;
 }
@@ -97,7 +97,7 @@ export function Tbody<T>(
   props: FlowProps<
     { data?: Accessor<T[] | undefined>; class?: string },
     (row: T, i: Accessor<number>) => JSX.Element
-  >
+  >,
 ) {
   const data = props.data ?? useContext(TableContext)[0];
 
@@ -120,14 +120,14 @@ export function Row(
     selectable?: boolean;
     ref?: Ref<HTMLTableRowElement>;
     onSelected?: (ref: HTMLTableRowElement) => void;
-  }>
+  }>,
 ) {
   const props = mergeProps(
     {
       class: '',
       selectable: false,
     },
-    _props
+    _props,
   );
 
   const row = useContext(RowContext);
@@ -161,7 +161,7 @@ export function Cell<T, U extends keyof T>(
   props: FlowProps<
     { key?: U; head?: boolean; class?: string },
     (cell: T[U] | undefined) => JSX.Element
-  >
+  >,
 ) {
   const row = useContext(RowContext) as T;
   const cell = props.key ? row[props.key] : undefined;

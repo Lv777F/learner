@@ -6,11 +6,8 @@
   "tags": [],
   "targets": {
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["apps/qwerty/**/*.{ts,spec.ts,tsx}"]
-      }
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
     },
     "build": {
       "executor": "@nx/vite:build",
@@ -62,7 +59,7 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/apps/qwerty"],
+      "outputs": ["{workspaceRoot}/coverage/apps/qwerty"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/apps/qwerty"

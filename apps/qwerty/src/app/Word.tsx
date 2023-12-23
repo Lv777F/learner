@@ -10,11 +10,11 @@ import { input$$, word$$ } from '../service/words';
 
 function Word() {
   const word = from(
-    word$$.pipe(switchAll(), observeOn(animationFrameScheduler, 300))
+    word$$.pipe(switchAll(), observeOn(animationFrameScheduler, 300)),
   );
 
   const input = from(
-    input$$.pipe(delayWhen((v) => timer(v ? 0 : 200, animationFrameScheduler)))
+    input$$.pipe(delayWhen((v) => timer(v ? 0 : 200, animationFrameScheduler))),
   );
 
   const chars = createMemo(() => word()?.word?.split(''));
@@ -26,7 +26,7 @@ function Word() {
     >
       <dfn class="not-italic">
         <ruby>
-          <span class="text-primary text-[5vw]">
+          <span class="text-primary text-8xl">
             <Index each={chars()}>
               {(char, i) => {
                 const inputChar = () => input()?.[i];
@@ -45,11 +45,11 @@ function Word() {
             </Index>
           </span>
           <rp>(</rp>
-          <rt class="text-accent text-[1vw]">{word()?.pronunciation}</rt>
+          <rt class="text-accent text-xl">{word()?.pronunciation}</rt>
           <rp>)</rp>
         </ruby>
       </dfn>
-      <pre class="text-secondary h-[1.5em] whitespace-pre-wrap text-[2vw]">
+      <pre class="text-secondary h-[1.5em] whitespace-pre-wrap text-2xl">
         {word()?.meanings.join('\n')}
       </pre>
     </h2>

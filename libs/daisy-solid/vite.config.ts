@@ -2,11 +2,12 @@
 import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 
+import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { join } from 'path';
 import dts from 'vite-plugin-dts';
-import viteTsConfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
+  root: __dirname,
   cacheDir: '../../node_modules/.vite/daisy-solid',
 
   plugins: [
@@ -17,9 +18,7 @@ export default defineConfig({
       skipDiagnostics: true,
     }),
 
-    viteTsConfigPaths({
-      root: '../../',
-    }),
+    nxViteTsPaths(),
   ],
 
   // Uncomment this if you are using workers.
@@ -34,6 +33,9 @@ export default defineConfig({
   // Configuration for building your library.
   // See: https://vitejs.dev/guide/build.html#library-mode
   build: {
+    outDir: '../../dist/libs/daisy-solid',
+    reportCompressedSize: true,
+    commonjsOptions: { transformMixedEsModules: true },
     lib: {
       // Could also be a dictionary or array of multiple entry points.
       entry: 'src/index.ts',

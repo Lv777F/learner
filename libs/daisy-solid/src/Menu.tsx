@@ -34,8 +34,8 @@ export function Menu<T = unknown>(_props: MenuProps<T>) {
       () => {
         props.onChange?.(value());
       },
-      { defer: true }
-    )
+      { defer: true },
+    ),
   );
 
   return (

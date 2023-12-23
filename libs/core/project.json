@@ -13,18 +13,15 @@
     },
     "test": {
       "executor": "@nx/vite:test",
-      "outputs": ["coverage/libs/core"],
+      "outputs": ["{workspaceRoot}/coverage/libs/core"],
       "options": {
         "passWithNoTests": true,
         "reportsDirectory": "../../coverage/libs/core"
       }
     },
     "lint": {
-      "executor": "@nx/linter:eslint",
-      "outputs": ["{options.outputFile}"],
-      "options": {
-        "lintFilePatterns": ["libs/core/**/*.ts"]
-      }
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
     }
   },
   "tags": []
